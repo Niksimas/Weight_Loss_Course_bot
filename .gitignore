@@ -1,0 +1,4 @@
+venv
+.idea
+Bot/.env
+Bot/google_doc/cred.json
