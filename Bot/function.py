@@ -13,11 +13,12 @@ def check_data(data_str: str) -> bool:
         return False
 
 
-def creat_list_calendar(month: int) -> dict:
+def creat_list_calendar(in_data: dt.date) -> dict:
     today = dt.date.today()
+    # today = dt.date(2023, 12, 22)
+    stop_day = today + dt.timedelta(days=15)
     "✖️"
-    result = {"today": today,
-              "days": [
+    result = {"days": [
                   "-", "-", "-", "-", "-", "-", "-",
                   "-", "-", "-", "-", "-", "-", "-",
                   "-", "-", "-", "-", "-", "-", "-",
@@ -25,16 +26,20 @@ def creat_list_calendar(month: int) -> dict:
                   "-", "-", "-", "-", "-", "-", "-"
               ],
               "back": "✖️✖️✖️",
-              "next": ">>>"
+              "next": "✖️✖️✖️"
               }
-    day_start = dt.date(today.year, month, 1).weekday()
+    day_start_month = dt.date(in_data.year, in_data.month, 1).weekday()
     k = 1
-    d = 0
-    for i in range(day_start, len(result["days"])):
-        if today.day <= k and d < 14:
-            result["days"][i] = str(k)
-            d += 1
-        k += 1
-    if today.month < month:
+    for i in range(day_start_month, len(result["days"])):
+        try:
+            day = dt.date(in_data.year, in_data.month, k)
+            if today < day and day < stop_day:
+                result["days"][i] = str(k)
+            k += 1
+        except ValueError:
+            continue
+    if today.month < in_data.month:
         result["back"] = "<<<"
+    if today.month > in_data.month:
+        result["next"] = ">>>"
     return result

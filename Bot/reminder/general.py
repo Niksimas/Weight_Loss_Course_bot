@@ -2,14 +2,14 @@ from aiogram import Bot
 import datetime as dt
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from Bot.google_doc.googleSheets import get_record
+from Bot.google_doc.googleSheets import get_active_user
 
 scheduler = AsyncIOScheduler(timezone="Asia/Novosibirsk")
 
 
 # №	id_photo	описание	Ответственный	id_responsible	Дедлайн	Чаты_публикации
 async def mail_notif(bot: Bot, id_record: int):
-    data = get_record(id_record, "TZ")
+    data = get_active_user()
     try:
         if data[1] != "":
             await bot.send_photo(data[4], data[1])

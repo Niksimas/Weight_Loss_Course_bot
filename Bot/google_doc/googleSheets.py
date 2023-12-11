@@ -25,33 +25,18 @@ def save_active_user(id_user, link_user) -> int:
     return num_record
 
 
-
-
-
-def get_id_responsible() -> list:
-    worksheet = sheet.worksheet("responsible")
-    values_list = worksheet.get_all_values()
-    return values_list[1:]
-
-
-def get_id_chat() -> list:
-    worksheet = sheet.worksheet("chat")
-    values_list = worksheet.get_all_values()
-    return values_list[1:]
-
-
-def get_record(num_record: int, name_list: str) -> list:
-    worksheet = sheet.worksheet(name_list)
-    data = worksheet.get_all_values()
-    return data[num_record]
-
-
-def save_tz(data: dict) -> int:
-    worksheet = sheet.worksheet("TZ")
+def save_data_user(id_user, data: dict) -> int:
+    worksheet = sheet.worksheet("data_user")
     num_record = len(worksheet.get_all_values())
-    chats = " ".join([i[0] for i in data["chat"]])
-    list_row = [num_record, data["id_photo"], data["text"], data["response"][0], data["response"][1], data["data"], chats]
+    try:
+        #     №	id_user	full name	birthday	timezone	Height	weight	Address	PhoneEmail	photo front	photo behind	side l	side r	DataStart
+        list_row = [num_record, id_user, data["full_name"], data["birthday"],
+                    data["tz"], data["height"], data["weight"], data["address"], data["phone_email"],
+                    data["photo1"], data["photo2"], data["photo3"], data["photo4"],
+                    data["data_start"]]
+    except KeyError:
+        list_row = [num_record, id_user, data["full_name"], data["birthday"],
+                    data["tz"], data["height"], data["weight"], data["address"], data["phone_email"],
+                    "", "", "", "", data["data_start"]]
     worksheet.append_row(list_row)
     return num_record
-
-get_active_user()

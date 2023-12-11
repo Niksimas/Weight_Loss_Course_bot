@@ -36,11 +36,22 @@ def custom_button(text: str, callback_data: str) -> InlineKeyboardMarkup:
     return keyboard
 
 
-def check() -> InlineKeyboardMarkup:
+def check_photo() -> InlineKeyboardMarkup:
     buttons = [
         [
             InlineKeyboardButton(text="Отправить заново", callback_data="restart_photo"),
-            InlineKeyboardButton(text="Отправить", callback_data="next")
+            InlineKeyboardButton(text="Сохранить и продолжить", callback_data="next")
+        ]
+    ]
+    keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)
+    return keyboard
+
+
+def check_form() -> InlineKeyboardMarkup:
+    buttons = [
+        [
+            InlineKeyboardButton(text="Заполнит заново", callback_data="restart_form"),
+            InlineKeyboardButton(text="Все верно", callback_data="next")
         ]
     ]
     keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)
@@ -48,59 +59,70 @@ def check() -> InlineKeyboardMarkup:
 "✖️"
 
 
-def kalendar(month: int = dt.date.today().month) -> InlineKeyboardMarkup:
-    data = fun.creat_list_calendar(month)
+def kalendar(in_data: dt.date = dt.date.today()) -> InlineKeyboardMarkup:
+    data_fun = fun.creat_list_calendar(in_data)
     buttons = [
         [
-            InlineKeyboardButton(text="<<<", callback_data=f"back_{month}"),
-            InlineKeyboardButton(text=f"47", callback_data="month"),
-            InlineKeyboardButton(text=">>>", callback_data=f"next_{month}")
+            InlineKeyboardButton(text=f"{data_fun['back']}", callback_data=f"back-{in_data}"),
+            InlineKeyboardButton(text=f"{in_data.month}.{in_data.year}", callback_data="month"),
+            InlineKeyboardButton(text=f"{data_fun['next']}", callback_data=f"next-{in_data}")
         ],
         [
-            InlineKeyboardButton(text=data["days"][0], callback_data=f"day_{data['days'][0]}_mon_{month}"),
-            InlineKeyboardButton(text=data["days"][1], callback_data=f"day_{data['days'][1]}_mon_{month}"),
-            InlineKeyboardButton(text=data["days"][2], callback_data=f"day_{data['days'][2]}_mon_{month}"),
-            InlineKeyboardButton(text=data["days"][3], callback_data=f"day_{data['days'][3]}_mon_{month}"),
-            InlineKeyboardButton(text=data["days"][4], callback_data=f"day_{data['days'][4]}_mon_{month}"),
-            InlineKeyboardButton(text=data["days"][5], callback_data=f"day_{data['days'][5]}_mon_{month}"),
-            InlineKeyboardButton(text=data["days"][6], callback_data=f"day_{data['days'][6]}_mon_{month}"),
+            InlineKeyboardButton(text=data_fun["days"][0], callback_data=f"setd-{data_fun['days'][0]}-{in_data.month}-{in_data.year}"),
+            InlineKeyboardButton(text=data_fun["days"][1], callback_data=f"setd-{data_fun['days'][1]}-{in_data.month}-{in_data.year}"),
+            InlineKeyboardButton(text=data_fun["days"][2], callback_data=f"setd-{data_fun['days'][2]}-{in_data.month}-{in_data.year}"),
+            InlineKeyboardButton(text=data_fun["days"][3], callback_data=f"setd-{data_fun['days'][3]}-{in_data.month}-{in_data.year}"),
+            InlineKeyboardButton(text=data_fun["days"][4], callback_data=f"setd-{data_fun['days'][4]}-{in_data.month}-{in_data.year}"),
+            InlineKeyboardButton(text=data_fun["days"][5], callback_data=f"setd-{data_fun['days'][5]}-{in_data.month}-{in_data.year}"),
+            InlineKeyboardButton(text=data_fun["days"][6], callback_data=f"setd-{data_fun['days'][6]}-{in_data.month}-{in_data.year}"),
         ],
         [
-            InlineKeyboardButton(text=data["days"][7], callback_data=f"day_{data['days'][7]}_mon_{month}"),
-            InlineKeyboardButton(text=data["days"][8], callback_data=f"day_{data['days'][8]}_mon_{month}"),
-            InlineKeyboardButton(text=data["days"][9], callback_data=f"day_{data['days'][9]}_mon_{month}"),
-            InlineKeyboardButton(text=data["days"][10], callback_data=f"day_{data['days'][10]}_mon_{month}"),
-            InlineKeyboardButton(text=data["days"][11], callback_data=f"day_{data['days'][11]}_mon_{month}"),
-            InlineKeyboardButton(text=data["days"][12], callback_data=f"day_{data['days'][12]}_mon_{month}"),
-            InlineKeyboardButton(text=data["days"][13], callback_data=f"day_{data['days'][13]}_mon_{month}"),
+            InlineKeyboardButton(text=data_fun["days"][7], callback_data=f"setd-{data_fun['days'][7]}-{in_data.month}-{in_data.year}"),
+            InlineKeyboardButton(text=data_fun["days"][8], callback_data=f"setd-{data_fun['days'][8]}-{in_data.month}-{in_data.year}"),
+            InlineKeyboardButton(text=data_fun["days"][9], callback_data=f"setd-{data_fun['days'][9]}-{in_data.month}-{in_data.year}"),
+            InlineKeyboardButton(text=data_fun["days"][10], callback_data=f"setd-{data_fun['days'][10]}-{in_data.month}-{in_data.year}"),
+            InlineKeyboardButton(text=data_fun["days"][11], callback_data=f"setd-{data_fun['days'][11]}-{in_data.month}-{in_data.year}"),
+            InlineKeyboardButton(text=data_fun["days"][12], callback_data=f"setd-{data_fun['days'][12]}-{in_data.month}-{in_data.year}"),
+            InlineKeyboardButton(text=data_fun["days"][13], callback_data=f"setd-{data_fun['days'][13]}-{in_data.month}-{in_data.year}"),
         ],
         [
-            InlineKeyboardButton(text=data["days"][14], callback_data=f"day_{data['days'][14]}_mon_{month}"),
-            InlineKeyboardButton(text=data["days"][15], callback_data=f"day_{data['days'][15]}_mon_{month}"),
-            InlineKeyboardButton(text=data["days"][16], callback_data=f"day_{data['days'][16]}_mon_{month}"),
-            InlineKeyboardButton(text=data["days"][17], callback_data=f"day_{data['days'][17]}_mon_{month}"),
-            InlineKeyboardButton(text=data["days"][18], callback_data=f"day_{data['days'][18]}_mon_{month}"),
-            InlineKeyboardButton(text=data["days"][19], callback_data=f"day_{data['days'][19]}_mon_{month}"),
-            InlineKeyboardButton(text=data["days"][20], callback_data=f"day_{data['days'][20]}_mon_{month}"),
+            InlineKeyboardButton(text=data_fun["days"][14], callback_data=f"setd-{data_fun['days'][14]}-{in_data.month}-{in_data.year}"),
+            InlineKeyboardButton(text=data_fun["days"][15], callback_data=f"setd-{data_fun['days'][15]}-{in_data.month}-{in_data.year}"),
+            InlineKeyboardButton(text=data_fun["days"][16], callback_data=f"setd-{data_fun['days'][16]}-{in_data.month}-{in_data.year}"),
+            InlineKeyboardButton(text=data_fun["days"][17], callback_data=f"setd-{data_fun['days'][17]}-{in_data.month}-{in_data.year}"),
+            InlineKeyboardButton(text=data_fun["days"][18], callback_data=f"setd-{data_fun['days'][18]}-{in_data.month}-{in_data.year}"),
+            InlineKeyboardButton(text=data_fun["days"][19], callback_data=f"setd-{data_fun['days'][19]}-{in_data.month}-{in_data.year}"),
+            InlineKeyboardButton(text=data_fun["days"][20], callback_data=f"setd-{data_fun['days'][20]}-{in_data.month}-{in_data.year}"),
         ],
         [
-            InlineKeyboardButton(text=data["days"][21], callback_data=f"day_{data['days'][21]}_mon_{month}"),
-            InlineKeyboardButton(text=data["days"][22], callback_data=f"day_{data['days'][22]}_mon_{month}"),
-            InlineKeyboardButton(text=data["days"][23], callback_data=f"day_{data['days'][23]}_mon_{month}"),
-            InlineKeyboardButton(text=data["days"][24], callback_data=f"day_{data['days'][24]}_mon_{month}"),
-            InlineKeyboardButton(text=data["days"][25], callback_data=f"day_{data['days'][25]}_mon_{month}"),
-            InlineKeyboardButton(text=data["days"][26], callback_data=f"day_{data['days'][26]}_mon_{month}"),
-            InlineKeyboardButton(text=data["days"][27], callback_data=f"day_{data['days'][27]}_mon_{month}"),
+            InlineKeyboardButton(text=data_fun["days"][21], callback_data=f"setd-{data_fun['days'][21]}-{in_data.month}-{in_data.year}"),
+            InlineKeyboardButton(text=data_fun["days"][22], callback_data=f"setd-{data_fun['days'][22]}-{in_data.month}-{in_data.year}"),
+            InlineKeyboardButton(text=data_fun["days"][23], callback_data=f"setd-{data_fun['days'][23]}-{in_data.month}-{in_data.year}"),
+            InlineKeyboardButton(text=data_fun["days"][24], callback_data=f"setd-{data_fun['days'][24]}-{in_data.month}-{in_data.year}"),
+            InlineKeyboardButton(text=data_fun["days"][25], callback_data=f"setd-{data_fun['days'][25]}-{in_data.month}-{in_data.year}"),
+            InlineKeyboardButton(text=data_fun["days"][26], callback_data=f"setd-{data_fun['days'][26]}-{in_data.month}-{in_data.year}"),
+            InlineKeyboardButton(text=data_fun["days"][27], callback_data=f"setd-{data_fun['days'][27]}-{in_data.month}-{in_data.year}"),
         ],
         [
-            InlineKeyboardButton(text=data["days"][28], callback_data=f"day_{data['days'][28]}_mon_{month}"),
-            InlineKeyboardButton(text=data["days"][29], callback_data=f"day_{data['days'][29]}_mon_{month}"),
-            InlineKeyboardButton(text=data["days"][30], callback_data=f"day_{data['days'][30]}_mon_{month}"),
-            InlineKeyboardButton(text=data["days"][31], callback_data=f"day_{data['days'][31]}_mon_{month}"),
-            InlineKeyboardButton(text=data["days"][32], callback_data=f"day_{data['days'][32]}_mon_{month}"),
-            InlineKeyboardButton(text=data["days"][33], callback_data=f"day_{data['days'][33]}_mon_{month}"),
-            InlineKeyboardButton(text=data["days"][34], callback_data=f"day_{data['days'][34]}_mon_{month}"),
+            InlineKeyboardButton(text=data_fun["days"][28], callback_data=f"setd-{data_fun['days'][28]}-{in_data.month}-{in_data.year}"),
+            InlineKeyboardButton(text=data_fun["days"][29], callback_data=f"setd-{data_fun['days'][29]}-{in_data.month}-{in_data.year}"),
+            InlineKeyboardButton(text=data_fun["days"][30], callback_data=f"setd-{data_fun['days'][30]}-{in_data.month}-{in_data.year}"),
+            InlineKeyboardButton(text=data_fun["days"][31], callback_data=f"setd-{data_fun['days'][31]}-{in_data.month}-{in_data.year}"),
+            InlineKeyboardButton(text=data_fun["days"][32], callback_data=f"setd-{data_fun['days'][32]}-{in_data.month}-{in_data.year}"),
+            InlineKeyboardButton(text=data_fun["days"][33], callback_data=f"setd-{data_fun['days'][33]}-{in_data.month}-{in_data.year}"),
+            InlineKeyboardButton(text=data_fun["days"][34], callback_data=f"setd-{data_fun['days'][34]}-{in_data.month}-{in_data.year}"),
         ],
+    ]
+    keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)
+    return keyboard
+
+
+def end_form() -> InlineKeyboardMarkup:
+    buttons = [
+        [
+            InlineKeyboardButton(text="Супер! Спасибо", callback_data="menu"),
+            InlineKeyboardButton(text="Изменить дату", callback_data="edit_time")
+        ]
     ]
     keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)
     return keyboard

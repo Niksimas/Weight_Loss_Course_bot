@@ -1,6 +1,6 @@
-from aiogram import Bot, Router, F
+from aiogram import Router, F
 from aiogram.types import Message, CallbackQuery, LabeledPrice
-from aiogram.filters import Command, CommandStart
+from aiogram.filters import Command, CommandStart, StateFilter
 from aiogram.fsm.context import FSMContext
 from .registration import Registration
 from Bot.filters.filters import UserIsActive
@@ -23,23 +23,30 @@ shopArticleId 538350
 @router.message(CommandStart(), UserIsActive(True))
 async def start_not_active(mess: Message):
     await mess.answer_invoice(
-        title="Подписка",
+        title="Оплата курса",
         description="У вас отсутствует подписка, пожалуйста, перейдите по форме оплаты внизу\n"
                     "Для оплаты используйте данные тестовой карты: 1111 1111 1111 1026, 12/22, CVC 000.",
         payload="buy",
         provider_token="381764678:TEST:73067",
         currency="RUB",
-        prices=[LabeledPrice(label="Подписка", amount=1500000)]
+        prices=[LabeledPrice(label="Подписка", amount=15000)]
     )
 
 
 @router.message(CommandStart(), UserIsActive(False))
 async def start_is_active(mess: Message, state: FSMContext):
     await state.set_state(Registration.TimeZone)
-    await mess.answer("У вас есть действующая подписка! Поздравляю!", reply_markup=kb.time_zone())
+    await mess.answer("У вас есть действующая подписка! Поздравляю!\n"
+                      "Пожалуйста, выберите свой часовой пояс", reply_markup=kb.time_zone())
 
 
-@router.message(Command("test"))
+@router.message(Command("test"), StateFilter(None))
 async def start_is_active(mess: Message, state: FSMContext):
-    await state.set_state(Registration.TimeZone)
-    await mess.answer("У вас есть действующая подписка! Поздравляю!", reply_markup=kb.kalendar())
+    await state.set_state(Registration.DataStart)
+    await mess.answer("У вас есть действующая подписка! Поздравляю!\n"
+                      "Пожалуйста, выберите свой часовой пояс", reply_markup=kb.kalendar())
+
+
+@router.callback_query(F.data == "menu", StateFilter(None))
+async def start_is_active(call: CallbackQuery, state: FSMContext):
+    await call.message.answer("Тут будет главное меню!")
