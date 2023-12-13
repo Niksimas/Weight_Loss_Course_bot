@@ -216,7 +216,7 @@ async def check_restart(call: CallbackQuery, state: FSMContext):
 
 
 @router.callback_query(Registration.Check, F.data == "next")
-async def check_restart(call: CallbackQuery, state: FSMContext):
+async def check_end(call: CallbackQuery, state: FSMContext):
     data = await state.get_data()
     save_data_user(call.from_user.id, data)
     await call.message.edit_text(

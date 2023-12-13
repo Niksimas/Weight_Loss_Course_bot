@@ -17,6 +17,27 @@ def get_active_user() -> list[str]:
     return values_list[1:]
 
 
+def get_all_user() -> list[str]:
+    """:return: список id всех пользователей"""
+    worksheet = sheet.worksheet("all_user")
+    values_list = worksheet.col_values(1)
+    return values_list
+
+
+def save_new_user(id_user) -> int:
+    worksheet = sheet.worksheet("all_user")
+    num_record = len(worksheet.get_all_values())
+    worksheet.append_row([id_user])
+    return num_record
+
+
+def get_admin() -> list[str]:
+    """:return: список id администраторов"""
+    worksheet = sheet.worksheet("admins")
+    values_list = worksheet.col_values(2)
+    return values_list[1:]
+
+
 def save_active_user(id_user, link_user) -> int:
     worksheet = sheet.worksheet("active_user")
     num_record = len(worksheet.get_all_values())

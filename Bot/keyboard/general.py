@@ -6,6 +6,15 @@ from aiogram.types import (InlineKeyboardButton, InlineKeyboardMarkup,
 import Bot.function as fun
 
 
+def start_for_new_user() -> InlineKeyboardMarkup:
+    buttons = [
+        [InlineKeyboardButton(text='+2', callback_data="tz_2")]
+    ]
+
+    keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)
+    return keyboard
+
+
 def time_zone() -> InlineKeyboardMarkup:
     buttons = [
         [
@@ -36,6 +45,17 @@ def custom_button(text: str, callback_data: str) -> InlineKeyboardMarkup:
     return keyboard
 
 
+def check_custom(yes_text: str, no_text: str) -> InlineKeyboardMarkup:
+    buttons = [
+        [
+            InlineKeyboardButton(text="Отправить заново", callback_data="yes"),
+            InlineKeyboardButton(text="Сохранить и продолжить", callback_data="no")
+        ]
+    ]
+    keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)
+    return keyboard
+
+
 def check_photo() -> InlineKeyboardMarkup:
     buttons = [
         [
@@ -50,7 +70,7 @@ def check_photo() -> InlineKeyboardMarkup:
 def check_form() -> InlineKeyboardMarkup:
     buttons = [
         [
-            InlineKeyboardButton(text="Заполнит заново", callback_data="restart_form"),
+            InlineKeyboardButton(text="Заполнить заново", callback_data="restart_form"),
             InlineKeyboardButton(text="Все верно", callback_data="next")
         ]
     ]
