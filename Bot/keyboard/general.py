@@ -50,7 +50,7 @@ def check_photo() -> InlineKeyboardMarkup:
 def check_form() -> InlineKeyboardMarkup:
     buttons = [
         [
-            InlineKeyboardButton(text="Заполнит заново", callback_data="restart_form"),
+            InlineKeyboardButton(text="Заполнить заново", callback_data="restart_form"),
             InlineKeyboardButton(text="Все верно", callback_data="next")
         ]
     ]
