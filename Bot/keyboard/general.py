@@ -6,11 +6,12 @@ from aiogram.types import (InlineKeyboardButton, InlineKeyboardMarkup,
 import Bot.function as fun
 
 
-def start_for_new_user() -> InlineKeyboardMarkup:
-    buttons = [
-        [InlineKeyboardButton(text='+2', callback_data="tz_2")]
-    ]
+def main_menu(edit_time: bool = False) -> InlineKeyboardMarkup:
+    buttons = []
+    if edit_time:
+        buttons.append([InlineKeyboardButton(text='Изменить дату старта', callback_data="edit_data_start")])
 
+    buttons.append([InlineKeyboardButton(text='Написать в поддержку', url="https://t.me/Yugra13")])
     keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)
     return keyboard
 
@@ -76,7 +77,6 @@ def check_form() -> InlineKeyboardMarkup:
     ]
     keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)
     return keyboard
-"✖️"
 
 
 def kalendar(in_data: dt.date = dt.date.today()) -> InlineKeyboardMarkup:
