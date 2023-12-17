@@ -6,17 +6,16 @@ from decouple import config
 
 from datetime import timedelta
 
-from aiogram import Bot, Dispatcher, types, F
 from aiogram.filters import Command
+from aiogram import Bot, Dispatcher, types, F
 from aiogram.fsm.storage.redis import DefaultKeyBuilder, RedisStorage
 from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_application
 
-import Bot.payments as pay
 from Bot.handlers import *
+import Bot.payments as pay
 from function import admins, home
 from Bot.reminder.general import start_scheduler, stop_scheduler
 
-# _____________________https://t.me/Schoolldeal_Litebot________________
 token = config("token", default="")
 REDIS_DSN = "redis://127.0.0.1:6379"
 storage = RedisStorage.from_url(REDIS_DSN, key_builder=DefaultKeyBuilder(with_bot_id=True),
@@ -41,10 +40,12 @@ if not os.path.exists(f"{home}/user_photo"):
     os.makedirs(f"{home}/user_photo")
 if not os.path.exists(f"{home}/file_mess_notif"):
     os.makedirs(f"{home}/file_mess_notif")
+if not os.path.exists(f"{home}/logging"):
+    os.makedirs(f"{home}/logging")
 
 logger = logging.getLogger()
 logger.setLevel(logging.WARNING)
-handler = logging.FileHandler(f"{home}/logging/bot{dt.date.today()}", "a", encoding="utf-8")
+handler = logging.FileHandler(f"{home}/logging/bot{dt.date.today()}", "a+", encoding="utf-8")
 handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(message)s"))
 logger.addHandler(handler)
 
