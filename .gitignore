@@ -2,3 +2,6 @@ venv
 .idea
 Bot/.env
 Bot/google_doc/cred.json
+Bot/test
+Bot/file_mess_notif
+Bot/user_photo

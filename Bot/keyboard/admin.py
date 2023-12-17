@@ -50,10 +50,8 @@ def course_days() -> InlineKeyboardMarkup:
 
 def time_mess(num_day: str) -> InlineKeyboardMarkup:
     buttons = [
-        [InlineKeyboardButton(text="Ночное сообщение (00:00)", callback_data=f"{num_day}_night")],
         [InlineKeyboardButton(text="Утреннее сообщение (05:00)", callback_data=f"{num_day}_morning")],
         [InlineKeyboardButton(text="Дневное сообщение (13:00)", callback_data=f"{num_day}_day")],
-        [InlineKeyboardButton(text="Вечернее сообщение (21:00)", callback_data=f"{num_day}_evening")],
         [InlineKeyboardButton(text="Назад", callback_data="back_day")],
     ]
     keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)

@@ -1,6 +1,5 @@
 import os
 import logging
-import asyncio
 import datetime as dt
 from aiohttp import web
 from decouple import config
@@ -8,17 +7,14 @@ from decouple import config
 from datetime import timedelta
 
 from aiogram import Bot, Dispatcher, types, F
-from aiogram.filters import Command, CommandStart, StateFilter
+from aiogram.filters import Command
 from aiogram.fsm.storage.redis import DefaultKeyBuilder, RedisStorage
-from aiogram.fsm.context import FSMContext
 from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_application
 
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
-
-from Bot.reminder.general import scheduler
-from Bot.handlers import *
 import Bot.payments as pay
+from Bot.handlers import *
 from function import admins, home
+from Bot.reminder.general import start_scheduler, stop_scheduler
 
 # _____________________https://t.me/Schoolldeal_Litebot________________
 token = config("token", default="")
@@ -35,16 +31,16 @@ BASE_URL = f"https://<ip>{MAIN_BOT_PATH}"
 WEB_SERVER_HOST = "127.0.0.1"
 WEB_SERVER_PORT = 8000
 
-dp.include_router(general.router)
+dp.include_router(router_general)
 dp.include_router(pay.general.router)
-dp.include_router(registration.router)
-dp.include_router(administrate.router)
+dp.include_router(router_reg)
+dp.include_router(router_admin)
+dp.include_router(router_ff)
 
-
-if not os.path.exists(f"{home}/cash"):
-    os.makedirs(f"{home}/cash")
-if not os.path.exists(f"{home}/logging"):
-    os.makedirs(f"{home}/logging")
+if not os.path.exists(f"{home}/user_photo"):
+    os.makedirs(f"{home}/user_photo")
+if not os.path.exists(f"{home}/file_mess_notif"):
+    os.makedirs(f"{home}/file_mess_notif")
 
 logger = logging.getLogger()
 logger.setLevel(logging.WARNING)
@@ -69,12 +65,13 @@ async def stop():
 
 async def on_startup():
     logger.error("Снятие и установка webhook")
+    await start_scheduler()
     await bot.delete_webhook()
     await bot.set_webhook(
             url=BASE_URL,
             certificate=types.FSInputFile("/etc/ssl/certs/Bot.crt"),  # Путь до сертификата
             drop_pending_updates=True)
-    scheduler.start()
+
     await bot.send_message(1235360344, "Бот запущен")
     return
 
@@ -87,6 +84,7 @@ async def on_shutdown():
     await bot.send_document(1235360344, log)
     await bot.delete_webhook()
     await bot.send_message(1235360344, "Бот выключен")
+    await stop_scheduler()
     return
 
 

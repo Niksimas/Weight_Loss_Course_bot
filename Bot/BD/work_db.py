@@ -3,31 +3,9 @@ import datetime as dt
 
 import Bot.function as fun
 
-
 today = dt.date.today()
 '%Y-%m-%d %H:%M:%S.%f'
 tomorrow = dt.datetime.strftime(dt.datetime.now() + dt.timedelta(days=1), '%d.%m.%Y')
-
-
-def get_id_all_user() -> list[int]:
-    """:return: список id всех пользователей"""
-    with sqlite3.connect(f"{fun.home}/BD/main_data.db") as connect:
-        cursor = connect.cursor()
-        cursor.execute('SELECT * FROM main.all_user')
-        list_id = cursor.fetchall()
-        print(list_id)
-        result = [i[0] for i in list_id]
-    return result
-
-
-def get_id_admin() -> list[int]:
-    """:return: список id администраторов"""
-    with sqlite3.connect(f"{fun.home}/BD/main_data.db") as connect:
-        cursor = connect.cursor()
-        cursor.execute('SELECT * FROM main.admin')
-        list_id = cursor.fetchall()
-        result = [i[0] for i in list_id]
-    return result
 
 
 def check_activity_user(user_id: str) -> bool:
@@ -55,6 +33,38 @@ def save_new_user(user_id: int, link: str):
         cursor.execute('INSERT INTO main.all_user (user_id, link) VALUES(?, ?);', data)
 
 
+def save_data_user(user_id: int, data_dict: dict):
+    with sqlite3.connect(f"{fun.home}/BD/main_data.db") as connect:
+        data = [user_id, data_dict["full_name"], data_dict["birthday"], data_dict["timezone"],
+                data_dict["height"], data_dict["weight"], data_dict["address"],
+                data_dict["phone_email"], data_dict["data_start"]]
+        cursor = connect.cursor()
+        cursor.execute('INSERT INTO main.data_user '
+                       '(user_id, full_name, birthday, timezone, height, weight, address, phone_email, data_start) '
+                       'VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?);', data)
+
+
+def get_id_all_user() -> list[int]:
+    """:return: список id всех пользователей"""
+    with sqlite3.connect(f"{fun.home}/BD/main_data.db") as connect:
+        cursor = connect.cursor()
+        cursor.execute('SELECT * FROM main.all_user')
+        list_id = cursor.fetchall()
+        print(list_id)
+        result = [i[0] for i in list_id]
+    return result
+
+
+def get_id_admin() -> list[int]:
+    """:return: список id администраторов"""
+    with sqlite3.connect(f"{fun.home}/BD/main_data.db") as connect:
+        cursor = connect.cursor()
+        cursor.execute('SELECT * FROM main.admin')
+        list_id = cursor.fetchall()
+        result = [i[0] for i in list_id]
+    return result
+
+
 def get_notif_mess(time: str, num_day: int) -> list:
     with sqlite3.connect(f"{fun.home}/BD/main_data.db") as connect:
         cursor = connect.cursor()
@@ -63,6 +73,62 @@ def get_notif_mess(time: str, num_day: int) -> list:
         data = [i for i in cursor.fetchall()[0]]
         if data[0] == "":
             data[0] = None
+        return data
+
+
+def get_data_user(user_id: int) -> dict:
+    with sqlite3.connect(f"{fun.home}/BD/main_data.db") as connect:
+        cursor = connect.cursor()
+        cursor.execute(f'select * from main.data_user where user_id=$1', [user_id])
+        data_list = cursor.fetchall()[0]
+        data_dict = {
+            "user_id": data_list[0], "full_name": data_list[1], "birthday": data_list[2],
+            "timezone": data_list[3], "height": data_list[4], "weight": data_list[5],
+            "address": data_list[6], "phone_email": data_list[7], "data_start": data_list[8],
+            "course_day": data_list[9], "mess_id": data_list[10]
+        }
+        return data_dict
+
+
+def get_actual_mess(num_day: int):
+    with sqlite3.connect(f"{fun.home}/BD/main_data.db") as connect:
+        cursor = connect.cursor()
+        cursor.execute(f'select * from main.notif_mess where num_day=$1',
+                       [num_day])
+        data_list = cursor.fetchall()[0]
+        data_dict = {
+            "num_day": data_list[0], "morning": data_list[1],
+            "day": data_list[2], "type_file_morning": data_list[3],
+            "type_file_day": data_list[4]
+        }
+        now_time = dt.datetime.today().time()
+        if dt.time(13, 0, 0) > now_time:
+            result = {"num_day": data_dict["num_day"], "text": data_dict["morning"], "type": data_dict["type_file_morning"]}
+        elif dt.time(21, 00, 00) > now_time:
+            result = {"num_day": data_dict["num_day"], "text": data_dict["day"], "type": data_dict["type_file_day"]}
+        else:
+            result = {"num_day": data_dict["num_day"],
+                      "text": "Мы желаем Вам доброй ночи. Для лучшего прохождения курса рекомендуем Вам"
+                "<a href='https://apps.apple.com/ru/app/%D0%BC%D0%BE-%D0%BC%D0%B5%D0%B4%D0%B8%D1%82%D0%B0%D1%86%D0%B8%D1%8F-%D0%B8-%D1%81%D0%BE%D0%BD/id1460803131'>"
+                " скачать приложение </a>", "type": "text"}
+        return result
+
+
+def get_timezone_user(timezone: int) -> list:
+    with sqlite3.connect(f"{fun.home}/BD/main_data.db") as connect:
+        cursor = connect.cursor()
+        cursor.execute(f'select user_id from main.data_user where timezone=$1',
+                       [timezone])
+        data_list = [int(i) for i in cursor.fetchall()[0]]
+        return data_list
+
+
+def get_course_day_user(user_id: int) -> int:
+    with sqlite3.connect(f"{fun.home}/BD/main_data.db") as connect:
+        cursor = connect.cursor()
+        cursor.execute(f'select course_day from main.data_user where user_id=$1',
+                       [user_id])
+        data = cursor.fetchall()[0][0]
         return data
 
 
@@ -81,57 +147,36 @@ def update_activity_user(user_id: int):
                        f'WHERE user_id=$1', [user_id])
 
 
-def save_data_user(user_id: int, data_dict: dict):
-    with sqlite3.connect(f"{fun.home}/BD/main_data.db") as connect:
-        data = [user_id, data_dict["full_name"], data_dict["birthday"], data_dict["timezone"],
-                data_dict["height"], data_dict["weight"], data_dict["address"],
-                data_dict["phone_email"], data_dict["data_start"]]
-        cursor = connect.cursor()
-        cursor.execute('INSERT INTO main.data_user '
-                       '(user_id, full_name, birthday, timezone, height, weight, address, phone_email, data_start) '
-                       'VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?);', data)
-
-
-def get_data_user(user_id: int) -> dict:
-    with sqlite3.connect(f"{fun.home}/BD/main_data.db") as connect:
-        cursor = connect.cursor()
-        cursor.execute(f'select * from main.data_user where user_id=$1', [user_id])
-        data_list = cursor.fetchall()[0]
-        data_dict = {
-            "user_id": data_list[0], "full_name": data_list[1], "birthday": data_list[2],
-            "timezone": data_list[3], "height": data_list[4], "weight": data_list[5],
-            "address": data_list[6], "phone_email": data_list[7], "data_start": data_list[8],
-            "course_day": data_list[9]
-        }
-        return data_dict
-
-
-def get_actual_mess(num_day: int):
-    with sqlite3.connect(f"{fun.home}/BD/main_data.db") as connect:
-        cursor = connect.cursor()
-        cursor.execute(f'select * from main.notif_mess where num_day=$1',
-                       [num_day])
-        data_list = cursor.fetchall()[0]
-        data_dict = {
-            "num_day": data_list[0], "night": data_list[1], "morning": data_list[2],
-            "day": data_list[3], "evening": data_list[4], "type_file_night": data_list[5],
-            "type_file_morning": data_list[6], "type_file_day": data_list[7],
-            "type_file_evening": data_list[8]
-        }
-        now_time = dt.datetime.today().time()
-        if dt.time(5, 0, 0) > now_time:
-            result = {"num_day": data_dict["num_day"], "text": data_dict["night"], "type": data_dict["type_file_night"]}
-        elif dt.time(13, 0, 0) > now_time:
-            result = {"num_day": data_dict["num_day"], "text": data_dict["morning"], "type": data_dict["type_file_morning"]}
-        elif dt.time(21, 00, 00) > now_time:
-            result = {"num_day": data_dict["num_day"], "text": data_dict["day"], "type": data_dict["type_file_day"]}
-        else:
-            result = {"num_day": data_dict["num_day"], "text": data_dict["evening"], "type": data_dict["type_file_evening"]}
-        return result
-
-
 def update_data_start(user_id: int, new_data: str):
     with sqlite3.connect(f"{fun.home}/BD/main_data.db") as connect:
         cursor = connect.cursor()
         cursor.execute(f'UPDATE main.data_user SET data_start=$1 '
                        f'WHERE user_id=$2', [new_data, user_id])
+
+
+def update_course_day(user_id: int, new_num_day: int):
+    with sqlite3.connect(f"{fun.home}/BD/main_data.db") as connect:
+        cursor = connect.cursor()
+        cursor.execute(f'UPDATE main.data_user SET course_day=$1 '
+                       f'WHERE user_id=$2', [new_num_day, user_id])
+
+
+def update_mess_id_user(user_id: int, new_mess_id: str):
+    with sqlite3.connect(f"{fun.home}/BD/main_data.db") as connect:
+        cursor = connect.cursor()
+        cursor.execute(f'UPDATE main.data_user SET mess_id=$1 '
+                       f'WHERE user_id=$2', [new_mess_id, user_id])
+
+
+def update_height_user(user_id: int, height: int):
+    with sqlite3.connect(f"{fun.home}/BD/main_data.db") as connect:
+        cursor = connect.cursor()
+        cursor.execute(f'UPDATE main.data_user SET height=$1 '
+                       f'WHERE user_id=$2', [height, user_id])
+
+
+def update_weight_user(user_id: int, weight: int):
+    with sqlite3.connect(f"{fun.home}/BD/main_data.db") as connect:
+        cursor = connect.cursor()
+        cursor.execute(f'UPDATE main.data_user SET weight=$1 '
+                       f'WHERE user_id=$2', [weight, user_id])

@@ -59,7 +59,7 @@ async def save_birthday(mess: Message, state: FSMContext):
 async def save_height(mess: Message, state: FSMContext):
     try:
         height = int(mess.text)
-        await state.update_data({"height": height})
+        await state.update_data({"height": str(height)})
         await mess.answer("Пожалуйста, введите ваш вес цифрами (в кг)")
         await state.set_state(Registration.Weight)
     except ValueError:
@@ -70,7 +70,7 @@ async def save_height(mess: Message, state: FSMContext):
 async def save_weight(mess: Message, state: FSMContext):
     try:
         weight = int(mess.text)
-        await state.update_data({"weight": weight})
+        await state.update_data({"weight": str(weight)})
         await mess.answer("Пожалуйста, напишите Ваш адрес, чтобы мы могли отправить продукцию к курсу. "
                           "\nЖелательный формат: Область, Город, Улица, Дом, Квартира")
         await state.set_state(Registration.Address)

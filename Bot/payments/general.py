@@ -31,7 +31,7 @@ async def start_not_active(mess: Message):
         title="Оплата курса",
         description="Для доступа к курсу, необходимо оформить подписку!",
         payload="buy",
-        provider_token="381764678:TEST:73067",
+        provider_token="390540012:LIVE:43966",
         currency="RUB",
         prices=[LabeledPrice(label="Подписка", amount=10000)]
     )

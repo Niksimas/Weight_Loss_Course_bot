@@ -7,7 +7,7 @@ from aiogram.filters import Command
 from aiogram.fsm.storage.memory import MemoryStorage
 
 import Bot.payments as pay
-from Bot.reminder.general import scheduler
+from Bot.reminder.general import start_scheduler
 import Bot.handlers as hand
 from function import admins, home
 
@@ -21,17 +21,12 @@ dp.include_router(hand.router_general)
 dp.include_router(pay.general.router)
 dp.include_router(hand.router_reg)
 dp.include_router(hand.router_admin)
+dp.include_router(hand.router_ff)
 
 if not os.path.exists(f"{home}/user_photo"):
     os.makedirs(f"{home}/user_photo")
 if not os.path.exists(f"{home}/file_mess_notif"):
     os.makedirs(f"{home}/file_mess_notif")
-
-
-# @dp.message()
-# async def start_is_active(mess: Message):
-#     print(mess)
-#     print()
 
 
 @dp.message(Command(commands=["stops159"]))
@@ -43,7 +38,7 @@ async def stop(message: types.Message):
 
 async def on_startup():
     await bot.delete_webhook(drop_pending_updates=True)
-    scheduler.start()
+
     await bot.send_message(admins[0], "Бот запущен")
     return
 
@@ -60,6 +55,7 @@ dp.shutdown.register(on_shutdown)
 
 
 async def main():
+    await start_scheduler()
     await dp.start_polling(bot)
 
 

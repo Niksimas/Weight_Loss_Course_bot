@@ -3,28 +3,15 @@ import datetime as dt
 from aiogram import Router, F, Bot
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery, FSInputFile
-from aiogram.filters import CommandStart, StateFilter
+from aiogram.filters import CommandStart, StateFilter, Command
 
 import Bot.keyboard as kb
 import Bot.function as fun
 from .registration import Registration
 from Bot.filters.filters import UserIsActive
-from Bot.BD.work_db import update_data_start, get_data_user, get_actual_mess
+from Bot.BD.work_db import update_data_start, get_data_user, get_actual_mess, update_mess_id_user
 
 router_general = Router()
-
-"""
-В главном меню отображается:
-Если курс не начался:
-- ФИО
-- Адрес
-- Контакт
-- дата старта
-
-Если курс начался
-- День курса
-- Отображение актуального сообщения
-"""
 
 
 @router_general.message(CommandStart(), UserIsActive())
@@ -40,14 +27,14 @@ async def start_is_active(mess: Message, bot: Bot):
     else:
         data_mess = get_actual_mess(data_user["course_day"])
         if data_mess['type'] == "text":
-            await mess.answer(
+            msg = await mess.answer(
                 f"Идет {data_mess['num_day']} день курса\n\n" +
                 data_mess['text'],
                 reply_markup=kb.main_menu()
             )
         elif data_mess['type'] == "photo":
             await bot.send_chat_action(mess.from_user.id, "upload_photo")
-            await mess.answer_photo(
+            msg = await mess.answer_photo(
                 FSInputFile(f"{fun.home}/file_mess_notif/{mess.data.split('_')[0]}/photo.jpg"),
                 caption=data_mess['text'],
                 reply_markup=kb.main_menu()
@@ -59,18 +46,19 @@ async def start_is_active(mess: Message, bot: Bot):
                 if i.split(".")[0] == "file":
                     file = i
                     break
-            await mess.answer_document(
+            msg = await mess.answer_document(
                 FSInputFile(f"{fun.home}/file_mess_notif/{data_mess['num_day']}/{file}"),
                 caption=data_mess['text'],
                 reply_markup=kb.main_menu()
             )
         elif data_mess['type'] == "video":
             await bot.send_chat_action(mess.from_user.id, "upload_video")
-            await mess.answer_video(
+            msg = await mess.answer_video(
                 FSInputFile(f"{fun.home}/file_mess_notif/{data_mess['num_day']}/video.mp4"),
                 caption=data_mess['text'],
                 reply_markup=kb.main_menu()
             )
+        update_mess_id_user(mess.from_user.id, data_user["mess_id"] + str(msg.message_id) + "\n")
 
 
 @router_general.callback_query(F.data == "menu", StateFilter(None))

@@ -5,12 +5,12 @@ from aiogram import Router, F, Bot
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery, FSInputFile
 from aiogram.fsm.state import State, StatesGroup
-from aiogram.filters import Command, CommandStart, StateFilter
+from aiogram.filters import Command, StateFilter
 
 import Bot.keyboard as kb
 import Bot.function as fun
 from Bot.BD.work_db import get_id_admin, get_id_all_user, get_notif_mess, update_mess_notif
-# from Bot.google_doc.googleSheets import get_active_user,
+
 
 router_admin = Router()
 router_admin.message.filter(F.from_user.id.in_(get_id_admin()))
@@ -196,7 +196,6 @@ async def choice_time_day(call: CallbackQuery, state: FSMContext):
 async def view_mess_time_day(call: CallbackQuery, state: FSMContext, bot: Bot):
     """показывает сообщение выбранного дня"""
     mess_data = get_notif_mess(call.data.split("_")[-1], int(call.data.split("_")[0]))
-    print(mess_data)
     await state.set_state(EditMessDay.Check)
     await call.message.delete()
     if mess_data[1] == "text":
@@ -294,5 +293,7 @@ async def set_mess_for_user(call: CallbackQuery, state: FSMContext):
 
 
 @router_admin.message(Command("test"), StateFilter(None))
-async def start_is_active(mess: Message):
+async def start_is_active(mess: Message, bot):
     await mess.answer("test", reply_markup=kb.custom_button("test", "test"))
+
+
