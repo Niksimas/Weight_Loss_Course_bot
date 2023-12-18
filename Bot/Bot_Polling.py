@@ -43,6 +43,8 @@ if not os.path.exists(f"{home}/user_photo"):
     os.makedirs(f"{home}/user_photo")
 if not os.path.exists(f"{home}/file_mess_notif"):
     os.makedirs(f"{home}/file_mess_notif")
+    for i in range(1, 32):
+        os.makedirs(f"{home}/file_mess_notif/{i}")
 if not os.path.exists(f"{home}/logging"):
     os.makedirs(f"{home}/logging")
 
