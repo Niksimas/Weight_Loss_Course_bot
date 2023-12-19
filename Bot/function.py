@@ -1,7 +1,6 @@
 import os
 import datetime as dt
 home = os.path.dirname(__file__)  # Тут сохраняется путь до рабочей папки
-admins = [1235360344]  # Список админов
 
 
 def check_data(data_str: str) -> bool:

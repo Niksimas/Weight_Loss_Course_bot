@@ -4,28 +4,24 @@ import datetime as dt
 from aiohttp import web
 from decouple import config
 
-from datetime import timedelta
-
 from aiogram.filters import Command
 from aiogram import Bot, Dispatcher, types, F
-from aiogram.fsm.storage.redis import DefaultKeyBuilder, RedisStorage
+from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_application
 
 from Bot.handlers import *
 import Bot.payments as pay
-from function import admins, home
+from function import home
+from Bot.BD.work_db import get_id_admin
 from Bot.reminder.general import start_scheduler, stop_scheduler
 
 token = config("token", default="")
 REDIS_DSN = "redis://127.0.0.1:6379"
-storage = RedisStorage.from_url(REDIS_DSN, key_builder=DefaultKeyBuilder(with_bot_id=True),
-                                data_ttl=timedelta(days=1.0), state_ttl=timedelta(days=1.0))
+
 bot = Bot(token, parse_mode="HTML")
-dp = Dispatcher(storage=storage)
-statistics_general = [0, 0]
+dp = Dispatcher(storage=MemoryStorage())
 
-
-MAIN_BOT_PATH = f"/LITE"
+MAIN_BOT_PATH = f"/MAIN"
 BASE_URL = f"https://<ip>{MAIN_BOT_PATH}"
 WEB_SERVER_HOST = "127.0.0.1"
 WEB_SERVER_PORT = 8000
@@ -57,7 +53,7 @@ logging.critical("Сообщения уровня CRITICAL, серьезная �
 
 
 # ______________________________СТАРТОВЫЕ_КОМАНДЫ______________________________________
-@dp.message(Command(commands="stops159"), F.from_user.id.in_(admins))
+@dp.message(Command(commands="stops159"), F.from_user.id.in_(get_id_admin()))
 async def stop():
     await on_shutdown()
     await bot.close()
@@ -73,18 +69,14 @@ async def on_startup():
             certificate=types.FSInputFile("/etc/ssl/certs/Bot.crt"),  # Путь до сертификата
             drop_pending_updates=True)
 
-    await bot.send_message(1235360344, "Бот запущен")
+    await bot.send_message(get_id_admin()[0], "Бот запущен")
     return
 
 
 async def on_shutdown():
     logging.warning('Выключение бота')
-    list_log = os.listdir(f"{home}/logging")
-    list_log.sort()
-    log = types.FSInputFile(f"{home}/logging/{list_log[-1]}")
-    await bot.send_document(1235360344, log)
     await bot.delete_webhook()
-    await bot.send_message(1235360344, "Бот выключен")
+    await bot.send_message(get_id_admin()[0], "Бот выключен")
     await stop_scheduler()
     return
 

@@ -106,8 +106,8 @@ async def save_phone(mess: Message, state: FSMContext):
 @router_reg.message(F.photo, Registration.Photo1)
 async def save_photo_front(mess: Message, state: FSMContext, bot: Bot):
     await bot.edit_message_reply_markup(mess.from_user.id, mess.message_id-1, reply_markup=None)
-    if not (os.path.isdir(f"{fun.home}/user_photo/{fun.admins[0]}")):
-        os.mkdir(f"{fun.home}/user_photo/{fun.admins[0]}")
+    if not (os.path.isdir(f"{fun.home}/user_photo/{mess.from_user.id}")):
+        os.mkdir(f"{fun.home}/user_photo/{mess.from_user.id}")
     await bot.download(mess.photo[-1].file_id, destination=f"{fun.home}/user_photo/{mess.from_user.id}/front.jpg")
     await state.update_data({"photo1": mess.photo[-1].file_id})
     await mess.answer("Ожидаю фотографию сзади!")
