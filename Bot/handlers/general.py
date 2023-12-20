@@ -74,7 +74,7 @@ async def edit_data_start(call: CallbackQuery, state: FSMContext):
     data = get_data_user(call.from_user.id)
     data_user = [int(i) for i in data["data_start"].split(".")]
     if dt.datetime.today()+dt.timedelta(hours=data['timezone']) < dt.datetime(data_user[2], data_user[1], data_user[0]):
-        await state.set_state(Registration.DataStart)
+        await state.set_state(Registration.DataStartR)
         await call.message.answer("Пожалуйста, выберите дату старта курса", reply_markup=kb.kalendar())
     else:
         await call.message.answer("Курс начнется меньше, чем через 5 часов. Дату старта нельзя изменить!")
@@ -106,7 +106,7 @@ async def answer_month(call: CallbackQuery, bot: Bot):
     await call.answer("Выберите дату в представленном месяце")
 
 
-@router_general.callback_query(Registration.DataStart, F.data.split("-")[0] == "setd")
+@router_general.callback_query(Registration.DataStartR, F.data.split("-")[0] == "setd")
 async def save_date_start(call: CallbackQuery, state: FSMContext):
     update_data_start(call.from_user.id, ".".join(call.data.split("-")[1:]))
     await call.message.edit_text(f"Дата старта изменена на {'.'.join(call.data.split('-')[1:])}",

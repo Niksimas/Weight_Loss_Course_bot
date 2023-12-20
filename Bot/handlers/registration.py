@@ -27,12 +27,13 @@ class Registration(StatesGroup):
     Photo3 = State()
     Photo4 = State()
     DataStart = State()
+    DataStartR = State()
     Check = State()
 
 
 @router_reg.callback_query(F.data.split("_")[0] == "tz", Registration.TimeZone)
 async def save_timezone(call: CallbackQuery, state: FSMContext):
-    await state.set_data({"timezone": call.data.split("_")[1]})
+    await state.set_data({"timezone": call.data.split("_")[1], "user_id": call.from_user.id})
     await call.message.edit_text("Пожалуйста, введите ваши ФИО", reply_markup=None)
     await state.set_state(Registration.FullName)
 
@@ -218,7 +219,7 @@ async def check_restart(call: CallbackQuery, state: FSMContext):
 @router_reg.callback_query(Registration.Check, F.data == "next")
 async def check_end(call: CallbackQuery, state: FSMContext):
     data = await state.get_data()
-    save_data_user(call.from_user.id, data)
+    save_data_user(call.from_user.id, data, call.from_user.username)
     await call.message.edit_text(
         f"Благодарим Вас за покупку курса. Ваш курс начинается <b>{data['data_start']}</b> в 05:00. "
         "Вы можете изменить дату старта не позднее чем за 5 часов перед началом",

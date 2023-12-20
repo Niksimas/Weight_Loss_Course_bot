@@ -2,7 +2,7 @@ import sqlite3
 import datetime as dt
 
 import Bot.function as fun
-
+from Bot.google_doc.googleSheets import save_data_user_sheet
 today = dt.date.today()
 '%Y-%m-%d %H:%M:%S.%f'
 tomorrow = dt.datetime.strftime(dt.datetime.now() + dt.timedelta(days=1), '%d.%m.%Y')
@@ -33,12 +33,13 @@ def save_new_user(user_id: int, link: str):
         cursor.execute('INSERT INTO main.all_user (user_id, link) VALUES(?, ?);', data)
 
 
-def save_data_user(user_id: int, data_dict: dict):
+def save_data_user(user_id: int, data_dict: dict, user_name: str):
     with sqlite3.connect(f"{fun.home}/BD/main_data.db") as connect:
         data = [user_id, data_dict["full_name"], data_dict["birthday"], data_dict["timezone"],
                 data_dict["height"], data_dict["weight"], data_dict["address"],
                 data_dict["phone_email"], data_dict["data_start"]]
         cursor = connect.cursor()
+        save_data_user_sheet(user_name, data_dict)
         cursor.execute('INSERT INTO main.data_user '
                        '(user_id, full_name, birthday, timezone, height, weight, address, phone_email, data_start) '
                        'VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?);', data)
