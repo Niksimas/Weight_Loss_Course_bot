@@ -8,9 +8,9 @@ from aiogram.filters import Command
 from aiogram import Bot, Dispatcher, types
 from aiogram.fsm.storage.memory import MemoryStorage
 
-from function import home
 import Bot.payments as pay
 import Bot.handlers as hand
+from Bot.function import home
 from Bot.BD.work_db import get_id_admin
 from Bot.reminder.general import start_scheduler
 

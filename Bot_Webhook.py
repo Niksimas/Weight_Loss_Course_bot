@@ -11,7 +11,7 @@ from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_applicati
 
 from Bot.handlers import *
 import Bot.payments as pay
-from function import home
+from Bot.function import home
 from Bot.BD.work_db import get_id_admin
 from Bot.reminder.general import start_scheduler, stop_scheduler
 
