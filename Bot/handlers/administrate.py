@@ -3,9 +3,9 @@ import os
 from aiogram.exceptions import *
 from aiogram import Router, F, Bot
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message, CallbackQuery, FSInputFile
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.filters import Command, StateFilter
+from aiogram.types import Message, CallbackQuery, FSInputFile
 
 import Bot.keyboard as kb
 import Bot.function as fun
@@ -36,15 +36,17 @@ async def cancel(call: CallbackQuery, state: FSMContext):
 @router_admin.callback_query(F.data == "send_mess_user")
 async def set_mess_for_user(call: CallbackQuery, state: FSMContext):
     await state.set_state(SendMessUser.UserId)
-    await call.message.edit_text("Пожалуйста, отправьте id чата пользователя", reply_markup=None)
+    await call.message.edit_text("Пожалуйста, отправьте id чата пользователя",
+                                 reply_markup=kb.custom_button("Отмена", "cancel_a"))
 
 
 @router_admin.message(SendMessUser.UserId)
 async def check_user(mess: Message, state: FSMContext):
-    if mess.text in get_id_all_user():
+    if int(mess.text) in get_id_all_user():
         await state.set_state(SendMessUser.MessText)
         await state.set_data({"user_id": mess.text})
-        await mess.answer("Пожалуйста, введите сообщение")
+        await mess.answer("Пожалуйста, введите сообщение",
+                          reply_markup=kb.custom_button("Отмена", "cancel_a"))
     else:
         await mess.answer("Данного пользователя не существует, введите другой ID",
                           reply_markup=kb.custom_button("Отмена", "cancel_a"))
@@ -71,13 +73,14 @@ class Notif(StatesGroup):
 @router_admin.callback_query(F.data == "restart_notif")
 async def set_mess_notif(call: CallbackQuery, state: FSMContext):
     await state.set_state(Notif.Mess)
-    await call.message.edit_text("Пожалуйста, отправьте информацию одним сообщением", reply_markup=None)
+    await call.message.edit_text("Пожалуйста, отправьте информацию одним сообщением",
+                                 reply_markup=kb.custom_button("Отмена", "cancel_a"))
 
 
 @router_admin.message(F.text, Notif.Mess)
 async def set_text(mess: Message, state: FSMContext):
     await state.set_data({"text": mess.text, "type": "text"})
-    await mess.answer(f"Сообщение для рассылке: \n\n{mess.text}", reply_markup=kb.menu_notif("text"))
+    await mess.answer(f"Сообщение для рассылки: \n\n{mess.text}", reply_markup=kb.menu_notif("text"))
 
 
 @router_admin.message(F.photo, Notif.Mess)
@@ -238,7 +241,7 @@ async def edit_mess_notif(call: CallbackQuery, state: FSMContext):
     if call.data.split("_")[0] == "edit":
         await state.set_data({"num_day": int(call.data.split("_")[-1]), "time": call.data.split("_")[1]})
     await call.message.edit_text("Пожалуйста, отправьте информацию одним сообщением",
-                                 reply_markup=None)
+                                 reply_markup=kb.custom_button("Отмена", "cancel_a"))
 
 
 @router_admin.message(F.text, EditMessDay.SetMess)
@@ -284,16 +287,13 @@ async def set_video_notif(mess: Message, state: FSMContext, bot: Bot):
 
 
 @router_admin.callback_query(EditMessDay.Verify, F.data.split("_")[0] == "yes")
-async def set_mess_for_user(call: CallbackQuery, state: FSMContext):
+async def set_mess_for_user(call: CallbackQuery, state: FSMContext, bot: Bot):
     data = await state.get_data()
     update_mess_notif(data["time"], data["num_day"], data["text"], data["type"])
+    try:
+        await bot.delete_message(call.from_user.id, call.message.message_id-1)
+    except:
+        pass
     await call.message.delete()
     await call.message.answer("Данные успешно изменены!", reply_markup=kb.menu_admin())
     await state.clear()
-
-
-@router_admin.message(Command("test"), StateFilter(None))
-async def start_is_active(mess: Message, bot):
-    await mess.answer("test", reply_markup=kb.custom_button("test", "test"))
-
-

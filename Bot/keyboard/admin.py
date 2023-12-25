@@ -1,15 +1,5 @@
-from typing import Union
-import datetime as dt
 from aiogram.types import (InlineKeyboardButton, InlineKeyboardMarkup,
-                           KeyboardButton, ReplyKeyboardMarkup,
-                           ReplyKeyboardRemove)
-import Bot.function as fun
-
-
-def share_number() -> ReplyKeyboardMarkup:
-    button = [[KeyboardButton(text='Поделиться контактом', request_contact=True)]]
-    keyboard = ReplyKeyboardMarkup(keyboard=button, one_time_keyboard=True, resize_keyboard=True)
-    return keyboard
+                           ReplyKeyboardMarkup)
 
 
 def menu_admin() -> InlineKeyboardMarkup:
@@ -17,6 +7,7 @@ def menu_admin() -> InlineKeyboardMarkup:
         [InlineKeyboardButton(text="Изменить информацию по дню", callback_data="edit_day_mess")],
         [InlineKeyboardButton(text="Запустить рассылку", callback_data="start_notif")],
         [InlineKeyboardButton(text="Отправить личное сообщение", callback_data="send_mess_user")],
+        [InlineKeyboardButton(text="В меню", callback_data="menu")]
     ]
     keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)
     return keyboard

@@ -1,11 +1,9 @@
-import os
 from aiogram import Bot, Router, F
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import Message, CallbackQuery, FSInputFile
 from aiogram.utils.media_group import MediaGroupBuilder
 
-import Bot.function as fun
 from Bot.BD.work_db import *
 import Bot.keyboard.general as kb
 

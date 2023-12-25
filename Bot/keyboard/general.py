@@ -1,17 +1,23 @@
-from typing import Union
 import datetime as dt
 from aiogram.types import (InlineKeyboardButton, InlineKeyboardMarkup,
-                           KeyboardButton, ReplyKeyboardMarkup,
-                           ReplyKeyboardRemove)
+                           KeyboardButton, ReplyKeyboardMarkup, WebAppInfo)
 import Bot.function as fun
+
+# web_app=WebAppInfo(
+def main_start() -> InlineKeyboardMarkup:
+    buttons = [
+        [InlineKeyboardButton(text='📄 Оферта', url="https://telegra.ph/Ofer-12-12")],
+        [InlineKeyboardButton(text='⚠️ Перед тем как купить курс', url="https://telegra.ph/prilozhenie-12-12-2")],
+        [InlineKeyboardButton(text='➡️ Перейти к курсу', callback_data="course")],
+        [InlineKeyboardButton(text='💬 Обратная связь', url="https://t.me/Yugra13")],
+    ]
+    return InlineKeyboardMarkup(inline_keyboard=buttons)
 
 
 def main_menu(edit_time: bool = False) -> InlineKeyboardMarkup:
     buttons = []
     if edit_time:
         buttons.append([InlineKeyboardButton(text='Изменить дату старта', callback_data="edit_data_start")])
-
-    buttons.append([InlineKeyboardButton(text='Написать в поддержку', url="https://t.me/Yugra13")])
     keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)
     return keyboard
 

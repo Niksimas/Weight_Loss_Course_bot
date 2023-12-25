@@ -3,13 +3,14 @@ import datetime as dt
 from aiogram import Bot, Router, F
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
-from aiogram.types import Message, CallbackQuery
-
 from aiogram.utils.media_group import MediaGroupBuilder
+from aiogram.types import Message, CallbackQuery, ReplyKeyboardRemove
+
+from aiogram.filters import Command
 
 import Bot.function as fun
 import Bot.keyboard.general as kb
-from Bot.BD.work_db import save_data_user
+from Bot.BD.work_db import save_data_user, update_photo_user
 
 router_reg = Router()
 
@@ -94,7 +95,7 @@ async def save_phone(mess: Message, state: FSMContext):
         await state.update_data({"phone_email": mess.contact.phone_number})
     except AttributeError:
         await state.update_data({"phone_email": mess.text})
-    await mess.answer("Благодарим Вас за пройденный опрос.\n", reply_markup=kb.ReplyKeyboardRemove())
+    await mess.answer("Благодарим Вас за пройденный опрос.\n", reply_markup=ReplyKeyboardRemove())
     await mess.answer(
         "Для того, чтобы после прохождения курса вы смогли наглядно увидеть разницу до и после его прохождения, "
         "мы рекомендуем вам сделать фотографии 4 вашего тела (1 спереди, 1 сзади, 2 по бокам). "
@@ -104,11 +105,28 @@ async def save_phone(mess: Message, state: FSMContext):
     await state.set_state(Registration.Photo1)
 
 
+@router_reg.message(F.media_group_id, Registration.Photo1)
+@router_reg.message(F.media_group_id, Registration.Photo2)
+@router_reg.message(F.media_group_id, Registration.Photo3)
+@router_reg.message(F.media_group_id, Registration.Photo4)
+async def save_photo_front(mess: Message, state: FSMContext, bot: Bot):
+    data = await state.get_data()
+    try:
+        b = data["group_id"]
+    except KeyError:
+        await state.update_data({"group_id": mess.media_group_id})
+        await mess.answer("Фотографии надо отправлять поочереди")
+
+
 @router_reg.message(F.photo, Registration.Photo1)
 async def save_photo_front(mess: Message, state: FSMContext, bot: Bot):
-    await bot.edit_message_reply_markup(mess.from_user.id, mess.message_id-1, reply_markup=None)
+    try:
+        await bot.edit_message_reply_markup(mess.from_user.id, mess.message_id-1, reply_markup=None)
+    except:
+        pass
     if not (os.path.isdir(f"{fun.home}/user_photo/{mess.from_user.id}")):
         os.mkdir(f"{fun.home}/user_photo/{mess.from_user.id}")
+    update_photo_user(mess.from_user.id)
     await bot.download(mess.photo[-1].file_id, destination=f"{fun.home}/user_photo/{mess.from_user.id}/front.jpg")
     await state.update_data({"photo1": mess.photo[-1].file_id})
     await mess.answer("Ожидаю фотографию сзади!")
@@ -139,7 +157,7 @@ async def save_photo_side_r(mess: Message, state: FSMContext, bot: Bot):
 
 
 @router_reg.callback_query(Registration.Photo4, F.data == "restart_photo")
-async def check_photo(call: CallbackQuery, state: FSMContext, bot: Bot):
+async def check_photo(call: CallbackQuery, state: FSMContext):
     await state.set_state(Registration.Photo1)
     await call.message.answer("Ожидаю фотографию спереди!")
 
@@ -153,10 +171,9 @@ async def view_date_start(call: CallbackQuery, state: FSMContext):
 
 
 @router_reg.callback_query(Registration.DataStart, F.data.split("-")[0] == "next")
-async def view_next_month(call: CallbackQuery, state: FSMContext):
+async def view_next_month(call: CallbackQuery):
     in_data = dt.date(int(call.data.split("-")[1]), int(call.data.split("-")[2]), int(call.data.split("-")[3]))
     if dt.date.today() + dt.timedelta(days=14) < in_data:
-    # if dt.date(2023, 12, 22) + dt.timedelta(days=14) > in_data:
         await call.message.edit_reply_markup(
             reply_markup=kb.kalendar((dt.date(in_data.year, in_data.month, in_data.day)+dt.timedelta(days=31))))
     else:
@@ -164,10 +181,9 @@ async def view_next_month(call: CallbackQuery, state: FSMContext):
 
 
 @router_reg.callback_query(Registration.DataStart, F.data.split("-")[0] == "back")
-async def view_back_month(call: CallbackQuery, state: FSMContext):
+async def view_back_month(call: CallbackQuery):
     in_data = dt.date(int(call.data.split("-")[1]), int(call.data.split("-")[2]), int(call.data.split("-")[3]))
     if dt.date.today() + dt.timedelta(days=14) < in_data:
-    # if dt.date(2023, 12, 22) + dt.timedelta(days=14) < in_data:
         await call.message.edit_reply_markup(
             reply_markup=kb.kalendar((dt.date(in_data.year, in_data.month, in_data.day)-dt.timedelta(days=31))))
     else:
@@ -181,7 +197,7 @@ async def answer_month(call: CallbackQuery, bot: Bot):
 
 
 @router_reg.callback_query(Registration.DataStart, F.data.split("-")[0] == "setd")
-async def save_date_start(call: CallbackQuery, state: FSMContext, bot: Bot):
+async def save_date_start(call: CallbackQuery, state: FSMContext):
     if call.data.split("-")[1] != "":
         await call.message.delete()
         await state.update_data({"data_start": f'{call.data.split("-")[1]}.{call.data.split("-")[2]}.{call.data.split("-")[3]}'})
@@ -211,9 +227,9 @@ async def save_date_start(call: CallbackQuery, state: FSMContext, bot: Bot):
 
 @router_reg.callback_query(Registration.Check, F.data == "restart_form")
 async def check_restart(call: CallbackQuery, state: FSMContext):
-    await state.set_data({"rest": 0})
+    await state.set_data({})
     await state.set_state(Registration.TimeZone)
-    await call.message.answer("Пожалуйста, выберите свой часовой пояс", reply_markup=kb.time_zone())
+    await call.message.edit_text("Пожалуйста, выберите свой часовой пояс", reply_markup=kb.time_zone())
 
 
 @router_reg.callback_query(Registration.Check, F.data == "next")

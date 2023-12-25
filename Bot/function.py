@@ -1,20 +1,21 @@
 import os
 import datetime as dt
-home = os.path.dirname(__file__)  # Тут сохраняется путь до рабочей папки
+home = os.path.dirname(__file__)
 
 
 def check_data(data_str: str) -> bool:
     try:
         data_list = [int(i) for i in data_str.split(".")]
         data = dt.date(data_list[-1], data_list[1], data_list[0])
-        return True
-    except (TypeError, ValueError):
+        if data <= dt.date.today()-dt.timedelta(5110):
+            return True
+        return False
+    except:
         return False
 
 
 def creat_list_calendar(in_data: dt.date) -> dict:
     today = dt.date.today()
-    # today = dt.date(2023, 12, 22)
     stop_day = today + dt.timedelta(days=15)
     "✖️"
     result = {"days": [

@@ -2,8 +2,8 @@ import os
 import datetime as dt
 from aiogram import Router, F, Bot
 from aiogram.fsm.context import FSMContext
+from aiogram.filters import CommandStart, StateFilter
 from aiogram.types import Message, CallbackQuery, FSInputFile
-from aiogram.filters import CommandStart, StateFilter, Command
 
 import Bot.keyboard as kb
 import Bot.function as fun
@@ -14,66 +14,75 @@ from Bot.BD.work_db import update_data_start, get_data_user, get_actual_mess, up
 router_general = Router()
 
 
-@router_general.message(CommandStart(), UserIsActive())
-async def start_is_active(mess: Message, bot: Bot):
-    data_user = get_data_user(mess.chat.id)
+@router_general.message(CommandStart())
+async def start_main(mess: Message):
+    await mess.answer("👋 Привет!)\n"
+                      "Я - личный ассистент Марии, твой "
+                      "помощник по прохождению обучения \"Голодание\"",
+                      reply_markup=kb.main_start())
 
+
+@router_general.callback_query(F.data == "menu", StateFilter(None))
+async def main_menu_call(call: CallbackQuery, state: FSMContext, bot: Bot):
+    await state.clear()
+    await call.message.answer("👋 Привет!)\n"
+                              "Я - личный ассистент Марии, твой "
+                              "помощник по прохождению обучения \"Голодание\"",
+                              reply_markup=kb.main_start())
+
+
+@router_general.callback_query(F.data == "course", UserIsActive())
+async def start_is_active(call: CallbackQuery, bot: Bot):
+    await call.message.delete()
+    data_user = get_data_user(call.from_user.id)
     if data_user["course_day"] == 0:
-        await mess.answer(f"ФИО: {data_user['full_name']}\n"
-                          f"Адрес: {data_user['address']}\n"
-                          f"Контакт: {data_user['phone_email']}\n"
-                          f"Дата старта: {data_user['data_start']}\n",
-                          reply_markup=kb.main_menu(True))
+        await call.message.answer(f"ФИО: {data_user['full_name']}\n"
+                                  f"Адрес: {data_user['address']}\n"
+                                  f"Контакт: {data_user['phone_email']}\n"
+                                  f"Дата старта: {data_user['data_start']}\n",
+                                  reply_markup=kb.main_menu(True))
     else:
         data_mess = get_actual_mess(data_user["course_day"])
         if data_mess['type'] == "text":
-            msg = await mess.answer(
+            msg = await call.message.answer(
                 f"Идет {data_mess['num_day']} день курса\n\n" +
                 data_mess['text'],
                 reply_markup=kb.main_menu()
             )
         elif data_mess['type'] == "photo":
-            await bot.send_chat_action(mess.from_user.id, "upload_photo")
-            msg = await mess.answer_photo(
-                FSInputFile(f"{fun.home}/file_mess_notif/{mess.data.split('_')[0]}/photo.jpg"),
+            await bot.send_chat_action(call.from_user.id, "upload_photo")
+            msg = await call.message.answer_photo(
+                FSInputFile(f"{fun.home}/file_mess_notif/{data_mess['num_day']}/photo.jpg"),
                 caption=data_mess['text'],
                 reply_markup=kb.main_menu()
             )
         elif data_mess['type'] == "doc":
-            await bot.send_chat_action(mess.from_user.id, "upload_document")
+            await bot.send_chat_action(call.message.from_user.id, "upload_document")
             file = os.listdir(f"{fun.home}/file_mess_notif/{data_mess['num_day']}")
             for i in file:
                 if i.split(".")[0] == "file":
                     file = i
                     break
-            msg = await mess.answer_document(
+            msg = await call.message.answer_document(
                 FSInputFile(f"{fun.home}/file_mess_notif/{data_mess['num_day']}/{file}"),
                 caption=data_mess['text'],
                 reply_markup=kb.main_menu()
             )
         elif data_mess['type'] == "video":
-            await bot.send_chat_action(mess.from_user.id, "upload_video")
-            msg = await mess.answer_video(
+            await bot.send_chat_action(call.from_user.id, "upload_video")
+            msg = await call.message.answer_video(
                 FSInputFile(f"{fun.home}/file_mess_notif/{data_mess['num_day']}/video.mp4"),
                 caption=data_mess['text'],
                 reply_markup=kb.main_menu()
             )
-        update_mess_id_user(mess.from_user.id, data_user["mess_id"] + str(msg.message_id) + "\n")
-
-
-@router_general.callback_query(F.data == "menu", StateFilter(None))
-async def main_menu(call: CallbackQuery, state: FSMContext, bot: Bot):
-    await state.clear()
-    await start_is_active(call.message, bot)
+        update_mess_id_user(call.from_user.id, data_user["mess_id"] + str(msg.message_id) + "\n")
 
 
 @router_general.callback_query(F.data == "edit_data_start", StateFilter(None))
-@router_general.callback_query(F.data == "test")
 async def edit_data_start(call: CallbackQuery, state: FSMContext):
     await call.message.delete()
     data = get_data_user(call.from_user.id)
-    data_user = [int(i) for i in data["data_start"].split(".")]
-    if dt.datetime.today()+dt.timedelta(hours=data['timezone']) < dt.datetime(data_user[2], data_user[1], data_user[0]):
+    if data["course_day"] == 0:
         await state.set_state(Registration.DataStartR)
         await call.message.answer("Пожалуйста, выберите дату старта курса", reply_markup=kb.kalendar())
     else:
@@ -112,4 +121,3 @@ async def save_date_start(call: CallbackQuery, state: FSMContext):
     await call.message.edit_text(f"Дата старта изменена на {'.'.join(call.data.split('-')[1:])}",
                                  reply_markup=None)
     await state.clear()
-

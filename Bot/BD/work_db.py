@@ -44,13 +44,13 @@ def save_data_user(user_id: int, data_dict: dict, user_name: str):
                        'VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?);', data)
         save_data_user_sheet(user_name, data_dict)
 
+
 def get_id_all_user() -> list[int]:
     """:return: список id всех пользователей"""
     with sqlite3.connect(f"{fun.home}/BD/main_data.db") as connect:
         cursor = connect.cursor()
         cursor.execute('SELECT * FROM main.all_user')
         list_id = cursor.fetchall()
-        print(list_id)
         result = [i[0] for i in list_id]
     return result
 
@@ -180,3 +180,10 @@ def update_weight_user(user_id: int, weight: int):
         cursor = connect.cursor()
         cursor.execute(f'UPDATE main.data_user SET weight=$1 '
                        f'WHERE user_id=$2', [weight, user_id])
+
+
+def update_photo_user(user_id: int):
+    with sqlite3.connect(f"{fun.home}/BD/main_data.db") as connect:
+        cursor = connect.cursor()
+        cursor.execute(f'UPDATE main.data_user SET photo=$1 '
+                       f'WHERE user_id=$2', [1, user_id])
