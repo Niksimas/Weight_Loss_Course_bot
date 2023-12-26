@@ -19,7 +19,7 @@ def main_start(user_id: int) -> InlineKeyboardMarkup:
 
 
 def main_menu(edit_time: bool = False) -> InlineKeyboardMarkup:
-    buttons = []
+    buttons = [[InlineKeyboardButton(text='В меню', callback_data="menu")]]
     if edit_time:
         buttons.append([InlineKeyboardButton(text='Изменить дату старта', callback_data="edit_data_start")])
     keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)
@@ -151,7 +151,7 @@ def end_form() -> InlineKeyboardMarkup:
     buttons = [
         [
             InlineKeyboardButton(text="Супер! Спасибо", callback_data="menu"),
-            InlineKeyboardButton(text="Изменить дату", callback_data="edit_time")
+            InlineKeyboardButton(text="Изменить дату", callback_data="edit_data_start")
         ]
     ]
     keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)

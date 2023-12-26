@@ -36,6 +36,7 @@ async def main_menu_call(call: CallbackQuery, state: FSMContext, bot: Bot):
                                   "помощник по прохождению обучения \"Голодание\"",
                                   reply_markup=kb.main_start(call.from_user.id))
 
+
 @router_general.callback_query(F.data == "course", UserIsActive())
 async def start_is_active(call: CallbackQuery, bot: Bot):
     await call.message.delete()

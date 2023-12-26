@@ -37,11 +37,12 @@ def save_data_user(user_id: int, data_dict: dict, user_name: str):
     with sqlite3.connect(f"{fun.home}/BD/main_data.db") as connect:
         data = [user_id, data_dict["full_name"], data_dict["birthday"], data_dict["timezone"],
                 data_dict["height"], data_dict["weight"], data_dict["address"],
-                data_dict["phone_email"], data_dict["data_start"]]
+                data_dict["phone_email"], data_dict["data_start"], data_dict["photo"]]
         cursor = connect.cursor()
         cursor.execute('INSERT INTO main.data_user '
-                       '(user_id, full_name, birthday, timezone, height, weight, address, phone_email, data_start) '
-                       'VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?);', data)
+                       '(user_id, full_name, birthday, timezone, height, weight, address, phone_email, '
+                       'data_start, photo) '
+                       'VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?);', data)
         save_data_user_sheet(user_name, data_dict)
 
 

@@ -33,7 +33,7 @@ class Registration(StatesGroup):
 
 @router_reg.callback_query(F.data.split("_")[0] == "tz", Registration.TimeZone)
 async def save_timezone(call: CallbackQuery, state: FSMContext):
-    await state.set_data({"timezone": call.data.split("_")[1], "user_id": call.from_user.id})
+    await state.set_data({"timezone": call.data.split("_")[1], "user_id": call.from_user.id, "photo": 0})
     await call.message.edit_text("Пожалуйста, введите ваши ФИО", reply_markup=None)
     await state.set_state(Registration.FullName)
 
@@ -125,7 +125,6 @@ async def save_photo_front(mess: Message, state: FSMContext, bot: Bot):
         pass
     if not (os.path.isdir(f"{fun.home}/user_photo/{mess.from_user.id}")):
         os.mkdir(f"{fun.home}/user_photo/{mess.from_user.id}")
-    update_photo_user(mess.from_user.id)
     await bot.download(mess.photo[-1].file_id, destination=f"{fun.home}/user_photo/{mess.from_user.id}/front.jpg")
     await state.update_data({"photo1": mess.photo[-1].file_id})
     await mess.answer("Ожидаю фотографию сзади!")
@@ -166,13 +165,14 @@ async def check_photo(call: CallbackQuery, state: FSMContext):
 async def view_date_start(call: CallbackQuery, state: FSMContext):
     await call.message.delete()
     await state.set_state(Registration.DataStart)
+    await state.update_data({"photo": 1})
     await call.message.answer("Пожалуйста, выберите дату старта курса", reply_markup=kb.kalendar())
 
 
 @router_reg.callback_query(Registration.DataStart, F.data.split("-")[0] == "next")
 async def view_next_month(call: CallbackQuery):
     in_data = dt.date(int(call.data.split("-")[1]), int(call.data.split("-")[2]), int(call.data.split("-")[3]))
-    if dt.date.today() + dt.timedelta(days=14) < in_data:
+    if dt.date.today() + dt.timedelta(days=14) > in_data:
         await call.message.edit_reply_markup(
             reply_markup=kb.kalendar((dt.date(in_data.year, in_data.month, in_data.day)+dt.timedelta(days=31))))
     else:
@@ -189,9 +189,8 @@ async def view_back_month(call: CallbackQuery):
         await call.answer("Доступных дат больше нет")
 
 
-@router_reg.callback_query(Registration.DataStart, F.data.split == "month")
-async def answer_month(call: CallbackQuery, bot: Bot):
-    await bot.answer_callback_query(call.id)
+@router_reg.callback_query(Registration.DataStart, F.data == "month")
+async def answer_month(call: CallbackQuery):
     await call.answer("Выберите дату в представленном месяце")
 
 
