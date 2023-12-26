@@ -2,15 +2,19 @@ import datetime as dt
 from aiogram.types import (InlineKeyboardButton, InlineKeyboardMarkup,
                            KeyboardButton, ReplyKeyboardMarkup, WebAppInfo)
 import Bot.function as fun
+from Bot.BD.work_db import get_id_admin
+
 
 # web_app=WebAppInfo(
-def main_start() -> InlineKeyboardMarkup:
+def main_start(user_id: int) -> InlineKeyboardMarkup:
     buttons = [
         [InlineKeyboardButton(text='📄 Оферта', url="https://telegra.ph/Ofer-12-12")],
         [InlineKeyboardButton(text='⚠️ Перед тем как купить курс', url="https://telegra.ph/prilozhenie-12-12-2")],
         [InlineKeyboardButton(text='➡️ Перейти к курсу', callback_data="course")],
         [InlineKeyboardButton(text='💬 Обратная связь', url="https://t.me/Yugra13")],
     ]
+    if user_id in get_id_admin():
+        buttons.append([InlineKeyboardButton(text='Администратору', callback_data="admin")],)
     return InlineKeyboardMarkup(inline_keyboard=buttons)
 
 

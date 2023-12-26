@@ -5,7 +5,6 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, LabeledPrice, PreCheckoutQuery, CallbackQuery
 
 import Bot.keyboard.general as kb
-from Bot.filters.filters import UserIsActive
 from Bot.handlers.registration import Registration
 from Bot.BD.work_db import save_new_user, update_activity_user
 
@@ -26,7 +25,6 @@ async def start_not_active(call: CallbackQuery, bot: Bot):
         currency="RUB",
         prices=[LabeledPrice(label="Подписка", amount=10000)]
     )
-    print(msg.message_id)
     save_new_user(call.from_user.id, call.from_user.username)
 
 

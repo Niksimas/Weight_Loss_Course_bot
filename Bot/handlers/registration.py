@@ -6,7 +6,6 @@ from aiogram.fsm.state import State, StatesGroup
 from aiogram.utils.media_group import MediaGroupBuilder
 from aiogram.types import Message, CallbackQuery, ReplyKeyboardRemove
 
-from aiogram.filters import Command
 
 import Bot.function as fun
 import Bot.keyboard.general as kb

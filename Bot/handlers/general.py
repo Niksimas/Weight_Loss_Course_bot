@@ -19,17 +19,22 @@ async def start_main(mess: Message):
     await mess.answer("👋 Привет!)\n"
                       "Я - личный ассистент Марии, твой "
                       "помощник по прохождению обучения \"Голодание\"",
-                      reply_markup=kb.main_start())
+                      reply_markup=kb.main_start(mess.from_user.id))
 
 
 @router_general.callback_query(F.data == "menu", StateFilter(None))
 async def main_menu_call(call: CallbackQuery, state: FSMContext, bot: Bot):
     await state.clear()
-    await call.message.answer("👋 Привет!)\n"
-                              "Я - личный ассистент Марии, твой "
-                              "помощник по прохождению обучения \"Голодание\"",
-                              reply_markup=kb.main_start())
-
+    try:
+        await call.message.edit_text("👋 Привет!)\n"
+                                     "Я - личный ассистент Марии, твой "
+                                     "помощник по прохождению обучения \"Голодание\"",
+                                     reply_markup=kb.main_start(call.from_user.id))
+    except:
+        await call.message.answer("👋 Привет!)\n"
+                                  "Я - личный ассистент Марии, твой "
+                                  "помощник по прохождению обучения \"Голодание\"",
+                                  reply_markup=kb.main_start(call.from_user.id))
 
 @router_general.callback_query(F.data == "course", UserIsActive())
 async def start_is_active(call: CallbackQuery, bot: Bot):
@@ -89,17 +94,17 @@ async def edit_data_start(call: CallbackQuery, state: FSMContext):
         await call.message.answer("Курс начнется меньше, чем через 5 часов. Дату старта нельзя изменить!")
 
 
-@router_general.callback_query(Registration.DataStart, F.data.split("-")[0] == "next")
+@router_general.callback_query(Registration.DataStartR, F.data.split("-")[0] == "next")
 async def view_next_month(call: CallbackQuery):
     in_data = dt.date(int(call.data.split("-")[1]), int(call.data.split("-")[2]), int(call.data.split("-")[3]))
-    if dt.date.today() + dt.timedelta(days=14) < in_data:
+    if dt.date.today() + dt.timedelta(days=14) > in_data:
         await call.message.edit_reply_markup(
             reply_markup=kb.kalendar((dt.date(in_data.year, in_data.month, in_data.day)+dt.timedelta(days=31))))
     else:
         await call.answer("Доступных дат больше нет")
 
 
-@router_general.callback_query(Registration.DataStart, F.data.split("-")[0] == "back")
+@router_general.callback_query(Registration.DataStartR, F.data.split("-")[0] == "back")
 async def view_back_month(call: CallbackQuery):
     in_data = dt.date(int(call.data.split("-")[1]), int(call.data.split("-")[2]), int(call.data.split("-")[3]))
     if dt.date.today() + dt.timedelta(days=14) < in_data:
@@ -109,15 +114,19 @@ async def view_back_month(call: CallbackQuery):
         await call.answer("Доступных дат больше нет")
 
 
-@router_general.callback_query(Registration.DataStart, F.data.split == "month")
+@router_general.callback_query(Registration.DataStartR, F.data == "month")
 async def answer_month(call: CallbackQuery, bot: Bot):
-    await bot.answer_callback_query(call.id)
     await call.answer("Выберите дату в представленном месяце")
+    await bot.answer_callback_query(call.id)
 
 
 @router_general.callback_query(Registration.DataStartR, F.data.split("-")[0] == "setd")
-async def save_date_start(call: CallbackQuery, state: FSMContext):
+async def save_date_start(call: CallbackQuery, state: FSMContext, bot: Bot):
+    if call.data.split("-")[1] == "":
+        await call.answer("Дата недоступна для выбора!")
+        await bot.answer_callback_query(call.id)
+        return
     update_data_start(call.from_user.id, ".".join(call.data.split("-")[1:]))
     await call.message.edit_text(f"Дата старта изменена на {'.'.join(call.data.split('-')[1:])}",
-                                 reply_markup=None)
+                                 reply_markup=kb.custom_button("В меню", "menu"))
     await state.clear()

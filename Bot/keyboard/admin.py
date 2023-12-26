@@ -7,6 +7,7 @@ def menu_admin() -> InlineKeyboardMarkup:
         [InlineKeyboardButton(text="Изменить информацию по дню", callback_data="edit_day_mess")],
         [InlineKeyboardButton(text="Запустить рассылку", callback_data="start_notif")],
         [InlineKeyboardButton(text="Отправить личное сообщение", callback_data="send_mess_user")],
+        [InlineKeyboardButton(text="Просмотреть фотографии пользователя", callback_data="view_photo")],
         [InlineKeyboardButton(text="В меню", callback_data="menu")]
     ]
     keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)

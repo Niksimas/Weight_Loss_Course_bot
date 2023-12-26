@@ -5,6 +5,7 @@ from aiogram import Router, F, Bot
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.filters import Command, StateFilter
+from aiogram.utils.media_group import MediaGroupBuilder
 from aiogram.types import Message, CallbackQuery, FSInputFile
 
 import Bot.keyboard as kb
@@ -27,6 +28,7 @@ async def start_is_active(mess: Message):
 
 
 @router_admin.callback_query(F.data == "cancel_a")
+@router_admin.callback_query(F.data == "admin")
 async def cancel(call: CallbackQuery, state: FSMContext):
     await state.clear()
     await call.message.edit_text("Выберите действие", reply_markup=kb.menu_admin())
@@ -41,7 +43,11 @@ async def set_mess_for_user(call: CallbackQuery, state: FSMContext):
 
 
 @router_admin.message(SendMessUser.UserId)
-async def check_user(mess: Message, state: FSMContext):
+async def check_user(mess: Message, state: FSMContext, bot: Bot):
+    try:
+        await bot.edit_message_reply_markup(mess.from_user.id, mess.message_id - 1, reply_markup=None)
+    except:
+        pass
     if int(mess.text) in get_id_all_user():
         await state.set_state(SendMessUser.MessText)
         await state.set_data({"user_id": mess.text})
@@ -56,6 +62,10 @@ async def check_user(mess: Message, state: FSMContext):
 async def send_mess(mess: Message, bot: Bot, state: FSMContext):
     data = await state.get_data()
     text = mess.text
+    try:
+        await bot.edit_message_reply_markup(mess.from_user.id, mess.message_id - 1, reply_markup=None)
+    except:
+        pass
     try:
         await bot.send_message(data["user_id"], text)
         await mess.answer("Сообщение доставлено!")
@@ -78,7 +88,11 @@ async def set_mess_notif(call: CallbackQuery, state: FSMContext):
 
 
 @router_admin.message(F.text, Notif.Mess)
-async def set_text(mess: Message, state: FSMContext):
+async def set_text(mess: Message, state: FSMContext, bot: Bot):
+    try:
+        await bot.edit_message_reply_markup(mess.from_user.id, mess.message_id - 1, reply_markup=None)
+    except:
+        pass
     await state.set_data({"text": mess.text, "type": "text"})
     await mess.answer(f"Сообщение для рассылки: \n\n{mess.text}", reply_markup=kb.menu_notif("text"))
 
@@ -296,4 +310,54 @@ async def set_mess_for_user(call: CallbackQuery, state: FSMContext, bot: Bot):
         pass
     await call.message.delete()
     await call.message.answer("Данные успешно изменены!", reply_markup=kb.menu_admin())
+    await state.clear()
+
+
+# ################################ Просмотр фотографий пользователя ##################################### #
+
+class ViewPhoto(StatesGroup):
+    SetUserId = State()
+
+
+@router_admin.callback_query(F.data == "view_photo")
+async def choice_day_mess(call: CallbackQuery, state: FSMContext):
+    await state.set_state(ViewPhoto.SetUserId)
+    await call.message.edit_text("Пожалуйста, введите ID пользователя:",
+                                 reply_markup=kb.custom_button("Отмена", "cancel_a"))
+
+
+@router_admin.message(ViewPhoto.SetUserId)
+async def check_user(mess: Message, state: FSMContext, bot: Bot):
+    try:
+        await bot.edit_message_reply_markup(mess.from_user.id, mess.message_id - 1, reply_markup=None)
+    except:
+        pass
+    if not (int(mess.text) in get_id_all_user()):
+        await mess.answer("Данного пользователя нет в базе данных! Введите другой ID",
+                          reply_markup=kb.custom_button("Отмена", "cancel_a"))
+        return
+    if os.path.exists(f"{fun.home}/user_photo/{mess.text}"):
+        await state.clear()
+        await bot.send_chat_action(mess.from_user.id, "upload_photo")
+        media_group = MediaGroupBuilder()
+        media_group.add_photo(media=FSInputFile(f"{fun.home}/user_photo/{mess.text}/behind.jpg"))
+        media_group.add_photo(media=FSInputFile(f"{fun.home}/user_photo/{mess.text}/front.jpg"))
+        media_group.add_photo(media=FSInputFile(f"{fun.home}/user_photo/{mess.text}/side_l.jpg"))
+        media_group.add_photo(media=FSInputFile(f"{fun.home}/user_photo/{mess.text}/side_r.jpg"))
+        await mess.answer_media_group(media=media_group.build(),
+                                      reply_markup=kb.custom_button("В меню", "menu"))
+    else:
+        await mess.answer("У данного пользователя нет загруженных фотографий, введите другой ID",
+                          reply_markup=kb.custom_button("Отмена", "cancel_a"))
+
+
+@router_admin.message(SendMessUser.MessText)
+async def send_mess(mess: Message, bot: Bot, state: FSMContext):
+    data = await state.get_data()
+    text = mess.text
+    try:
+        await bot.send_message(data["user_id"], text)
+        await mess.answer("Сообщение доставлено!")
+    except (TelegramForbiddenError, TelegramBadRequest):
+        await mess.answer("Сообщение не доставлено!")
     await state.clear()
