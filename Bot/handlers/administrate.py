@@ -17,10 +17,6 @@ router_admin = Router()
 router_admin.message.filter(F.from_user.id.in_(get_id_admin()))
 
 
-class SendMessUser(StatesGroup):
-    UserId = State()
-    MessText = State()
-
 
 @router_admin.message(Command("admin"), StateFilter(None))
 async def start_is_active(mess: Message):
@@ -35,6 +31,12 @@ async def cancel(call: CallbackQuery, state: FSMContext):
 
 
 # ################################ Создание сообщения ##################################### #
+class SendMessUser(StatesGroup):
+    UserId = State()
+    MessText = State()
+    Check = State()
+
+
 @router_admin.callback_query(F.data == "send_mess_user")
 async def set_mess_for_user(call: CallbackQuery, state: FSMContext):
     await state.set_state(SendMessUser.UserId)
