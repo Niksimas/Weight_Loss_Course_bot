@@ -13,13 +13,17 @@ sheet = client.open_by_url('https://docs.google.com/spreadsheets/d/1ak1yng-lThA3
 def save_data_user_sheet(user_name, data: dict) -> int:
     worksheet = sheet.worksheet("users")
     num_record = len(worksheet.get_all_values())
+    if data["photo"]:
+        photo = "Загружены"
+    else:
+        photo = "Не загружены"
     try:
         list_row = [num_record, user_name, data['user_id'], data["full_name"], data["birthday"],
                     data["timezone"], data["height"], data["weight"], data["address"], data["phone_email"],
-                    data["data_start"], data["photo"]]
+                    data["data_start"], photo]
     except KeyError:
         list_row = [num_record, user_name, data['user_id'], data["full_name"], data["birthday"],
                     data["timezone"], data["height"], data["weight"], data["address"], data["phone_email"],
-                    data["data_start"], data["photo"]]
+                    data["data_start"], photo]
     worksheet.append_row(list_row)
     return num_record
