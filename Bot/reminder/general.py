@@ -75,14 +75,14 @@ async def dell_mess_info(user_id: int):
 @scheduler6.scheduled_job("cron", hour=0, minute=0)
 @scheduler7.scheduled_job("cron", hour=0, minute=0)
 async def main_process_night():
-    timezone = dt.datetime.today().time().hour - 5
+    timezone = dt.datetime.today().time().hour
     user_list = get_timezone_user(timezone)
     for user_id in user_list:
         user_data = get_data_user(user_id)
+        await dell_mess_info(user_id)
         if user_data["course_day"] == 31:
             await bot.send_message(user_id, "Подписка закончилась!")
             update_course_day(user_id, 0)
-            await dell_mess_info(user_id)
         elif user_data["course_day"] == 0:
             date = dt.datetime.strptime(user_data["data_start"], '%d.%m.%Y').date()
             if dt.date.today() == date:
