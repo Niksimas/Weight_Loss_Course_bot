@@ -131,3 +131,8 @@ async def save_date_start(call: CallbackQuery, state: FSMContext, bot: Bot):
     await call.message.edit_text(f"Дата старта изменена на {'.'.join(call.data.split('-')[1:])}",
                                  reply_markup=kb.custom_button("В меню", "menu"))
     await state.clear()
+
+
+@router_general.message(StateFilter(None))
+async def default_answer(mess: Message):
+    await mess.answer("Я не знаю такой команды", reply_markup=kb.custom_button("В меню", "menu"))
