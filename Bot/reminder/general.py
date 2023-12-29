@@ -68,13 +68,8 @@ async def dell_mess_info(user_id: int):
             pass
 
 
-@scheduler2.scheduled_job("cron", hour=0, minute=0)
-@scheduler3.scheduled_job("cron", hour=0, minute=0)
-@scheduler4.scheduled_job("cron", hour=0, minute=0)
-@scheduler5.scheduled_job("cron", hour=0, minute=0)
-@scheduler6.scheduled_job("cron", hour=0, minute=0)
-@scheduler7.scheduled_job("cron", hour=0, minute=0)
-async def main_process_night():
+# ################################-NIGHT-###################################### #
+async def process_night(timezone: int):
     timezone = dt.datetime.today().time().hour
     user_list = get_timezone_user(timezone)
     for user_id in user_list:
@@ -96,36 +91,100 @@ async def main_process_night():
             update_course_day(user_id, user_data["course_day"] + 1)
 
 
+@scheduler2.scheduled_job("cron", hour=0, minute=0)
+async def trigger_timezone_2():
+    await process_night(2)
+
+
+@scheduler3.scheduled_job("cron", hour=0, minute=0)
+async def trigger_timezone_3():
+    await process_night(3)
+    
+
+@scheduler4.scheduled_job("cron", hour=0, minute=0)
+async def trigger_timezone_4():
+    await process_night(4)
+  
+    
+@scheduler5.scheduled_job("cron", hour=0, minute=0)
+async def trigger_timezone_5():
+    await process_night(5)
+    
+    
+@scheduler6.scheduled_job("cron", hour=0, minute=0)
+async def trigger_timezone_6():
+    await process_night(6)
+    
+    
+@scheduler7.scheduled_job("cron", hour=0, minute=0)
+async def trigger_timezone_7():
+    await process_night(7)
+
+
+# ################################-MORNING-###################################### #
 @scheduler2.scheduled_job("cron", hour=5, minute=0)
+async def trigger_timezone_2():
+    await main_process("morning", 2)
+
+
 @scheduler3.scheduled_job("cron", hour=5, minute=0)
+async def trigger_timezone_3():
+    await main_process("morning", 3)
+
+
 @scheduler4.scheduled_job("cron", hour=5, minute=0)
+async def trigger_timezone_4():
+    await main_process("morning", 4)
+
+
 @scheduler5.scheduled_job("cron", hour=5, minute=0)
+async def trigger_timezone_5():
+    await main_process("morning", 5)
+
+
 @scheduler6.scheduled_job("cron", hour=5, minute=0)
+async def trigger_timezone_6():
+    await main_process("morning", 6)
+
+
 @scheduler7.scheduled_job("cron", hour=5, minute=0)
-async def process_morning():
-    timezone = dt.datetime.today().time().hour - 5
-    await main_process("morning", timezone)
+async def trigger_timezone_7():
+    await main_process("morning", 7)
 
 
+# ################################-DAY-###################################### #
 @scheduler2.scheduled_job("cron", hour=13, minute=0)
+async def trigger_timezone_2():
+    await main_process("day", 2)
+
+
 @scheduler3.scheduled_job("cron", hour=13, minute=0)
+async def trigger_timezone_3():
+    await main_process("day", 3)
+
+
 @scheduler4.scheduled_job("cron", hour=13, minute=0)
+async def trigger_timezone_4():
+    await main_process("day", 4)
+
+
 @scheduler5.scheduled_job("cron", hour=13, minute=0)
+async def trigger_timezone_5():
+    await main_process("day", 5)
+
+
 @scheduler6.scheduled_job("cron", hour=13, minute=0)
+async def trigger_timezone_6():
+    await main_process("day", 6)
+
+
 @scheduler7.scheduled_job("cron", hour=13, minute=0)
-async def process_day():
-    timezone = dt.datetime.today().time().hour - 13
-    await main_process("day", timezone)
+async def trigger_timezone_7():
+    await main_process("day", 7)
 
 
-@scheduler2.scheduled_job("cron", hour=21, minute=0)
-@scheduler3.scheduled_job("cron", hour=21, minute=0)
-@scheduler4.scheduled_job("cron", hour=21, minute=0)
-@scheduler5.scheduled_job("cron", hour=21, minute=0)
-@scheduler6.scheduled_job("cron", hour=21, minute=0)
-@scheduler7.scheduled_job("cron", hour=21, minute=0)
-async def process_evening():
-    timezone = dt.datetime.today().time().hour - 21
+# ################################-EVENING-###################################### #
+async def process_evening(timezone: int):
     list_user = get_timezone_user(timezone)
     for i in list_user:
         try:
@@ -135,10 +194,37 @@ async def process_evening():
                 "<a href='https://apps.apple.com/ru/app/%D0%BC%D0%BE-%D0%BC%D0%B5%D0%B4%D0%B8%D1%82%D0%B0%D1%86%D0%B8%D1%8F-%D0%B8-%D1%81%D0%BE%D0%BD/id1460803131'>"
                 " скачать приложение </a>")
         except (TelegramForbiddenError, TelegramBadRequest):
-            await bot.send_message(get_id_all_user()[0], f"Пользователю {i}, сообщение не доставлено!")
+            await bot.send_message(get_id_admin()[0], f"Пользователю {i}, сообщение не доставлено!")
 
 
+@scheduler2.scheduled_job("cron", hour=21, minute=0)
+async def trigger_timezone_2():
+    await process_evening(2)
 
+
+@scheduler3.scheduled_job("cron", hour=21, minute=0)
+async def trigger_timezone_3():
+    await process_evening(3)
+
+
+@scheduler4.scheduled_job("cron", hour=21, minute=0)
+async def trigger_timezone_4():
+    await process_evening(4)
+
+
+@scheduler5.scheduled_job("cron", hour=21, minute=0)
+async def trigger_timezone_5():
+    await process_evening(5)
+
+
+@scheduler6.scheduled_job("cron", hour=21, minute=0)
+async def trigger_timezone_6():
+    await process_evening(6)
+
+
+@scheduler7.scheduled_job("cron", hour=21, minute=0)
+async def trigger_timezone_7():
+    await process_evening(7)
 
 
 async def start_scheduler():
