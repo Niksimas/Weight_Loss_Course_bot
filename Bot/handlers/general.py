@@ -42,12 +42,19 @@ async def start_is_active(call: CallbackQuery, bot: Bot):
     await call.message.delete()
     data_user = get_data_user(call.from_user.id)
     if data_user["course_day"] == 0:
+        if data_user['group_individual'] == "group":
+            passing = "в группе"
+            edit_date = False
+        else:
+            passing = "индивидуально"
+            edit_date = True
         await call.message.answer(f"ФИО: {data_user['full_name']}\n"
                                   f"Адрес: {data_user['address']}\n"
                                   f"Контакт: {data_user['phone']}\n"
                                   f"Email: {data_user['email']}\n"
+                                  f"Прохождение: {passing}\n"
                                   f"Дата старта: {data_user['data_start']}\n",
-                                  reply_markup=kb.main_menu(True))
+                                  reply_markup=kb.main_menu(edit_date))
     else:
         data_mess = get_actual_mess(data_user["course_day"])
         if data_mess['type'] == "text":

@@ -197,10 +197,11 @@ async def view_next_month(call: CallbackQuery, state: FSMContext):
     with open(f"{fun.home}/file_mess_notif/group_info.json") as f:
         data = json.load(f)
     await call.message.edit_text(f"Перейдите по ссылке в беседу вашей группы: {data['link']}.\n"
-                                 f"Обучение начнется {data['date']}")
+                                 f"Обучение начнется {data['date']}",
+                                 reply_markup=kb.custom_button("В меню", "menu"))
     await state.update_data({"group_individual": "group", "data_start": data['date']})
     data_user = await state.get_data()
-    save_data_user(call.message.from_user.id, data_user, call.message.from_user.username)
+    save_data_user(call.from_user.id, data_user, call.message.from_user.username)
     await state.clear()
 
 

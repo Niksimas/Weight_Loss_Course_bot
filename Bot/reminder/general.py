@@ -80,7 +80,7 @@ async def process_night(timezone: int):
             update_course_day(user_id, 0)
         elif user_data["course_day"] == 0:
             date = dt.datetime.strptime(user_data["data_start"], '%d.%m.%Y').date()
-            if dt.date.today() == date:
+            if ((dt.date.today() == date)and(user_data['group_individual']=="individual") ):
                 update_course_day(user_id, 1)
         elif user_data["course_day"] == 30:
             fsm_storage_key = StorageKey(bot_id=bot.id, user_id=user_id, chat_id=user_id)
