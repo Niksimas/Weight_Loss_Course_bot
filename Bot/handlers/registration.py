@@ -1,4 +1,5 @@
 import os
+import json
 import datetime as dt
 from aiogram import Bot, Router, F
 from aiogram.fsm.context import FSMContext
@@ -21,14 +22,23 @@ class Registration(StatesGroup):
     Height = State()
     Weight = State()
     Address = State()
-    PhoneEmail = State()
+    Phone = State()
+    Email = State()
     Photo1 = State()
     Photo2 = State()
     Photo3 = State()
     Photo4 = State()
+    GroupIndividual = State()
     DataStart = State()
     DataStartR = State()
     Check = State()
+
+
+@router_reg.callback_query(F.data == "course")
+async def process_successful_payment(call: CallbackQuery, state: FSMContext):
+    await state.set_state(Registration.TimeZone)
+    await call.message.edit_text("Пожалуйста, выберите свой часовой пояс относительно 0 пояса\n"
+                                 "(Москва - UTC+3)", reply_markup=kb.time_zone())
 
 
 @router_reg.callback_query(F.data.split("_")[0] == "tz", Registration.TimeZone)
@@ -82,24 +92,36 @@ async def save_weight(mess: Message, state: FSMContext):
 @router_reg.message(Registration.Address)
 async def save_address(mess: Message, state: FSMContext):
     await state.update_data({"address": mess.text})
-    await mess.answer("Пожалуйста, напишите, свой email или нажмите на кнопку \"Поделиться контактом\", "
+    await mess.answer("Пожалуйста, напишите, свой номер телефона или нажмите на кнопку \"Поделиться контактом\", "
                       "чтобы мы могли уведомить Вас о поступлении товара", reply_markup=kb.share_number())
-    await state.set_state(Registration.PhoneEmail)
+    await state.set_state(Registration.Phone)
 
 
-@router_reg.message(Registration.PhoneEmail)
+@router_reg.message(Registration.Phone)
+async def save_phone(mess: Message, state: FSMContext):
+    try:
+        await state.update_data({"phone": mess.contact.phone_number})
+    except AttributeError:
+        await state.update_data({"phone": mess.text})
+    await mess.answer("Пожалуйста, напишите email", reply_markup=ReplyKeyboardRemove())
+    await state.set_state(Registration.Email)
+
+
+@router_reg.message(Registration.Email)
 async def save_phone(mess: Message, state: FSMContext):
     await state.update_data({"del": mess.message_id})
     try:
-        await state.update_data({"phone_email": mess.contact.phone_number})
+        await state.update_data({"email": mess.contact.phone_number})
     except AttributeError:
-        await state.update_data({"phone_email": mess.text})
+        await state.update_data({"email": mess.text})
     await mess.answer("Благодарим Вас за пройденный опрос.\n", reply_markup=ReplyKeyboardRemove())
     await mess.answer(
         "Для того, чтобы после прохождения курса вы смогли наглядно увидеть разницу до и после его прохождения, "
-        "мы рекомендуем вам сделать фотографии 4 вашего тела (1 спереди, 1 сзади, 2 по бокам). "
+        "я рекомендую вам сделать фотографии 4 вашего тела (1 спереди, 1 сзади, 2 по бокам). "
         "\nПожалуйста сделайте их и отправьте последовательно в этот чат, "
         "чтобы по итогу прохождения получить коллаж «До/После»\n\n"
+        "Если не хотите делиться фото, сделайте его для себя и сохраните, для того, "
+        "чтобы наглядно увидеть результат по прохождению курса\n\n"
         "Ожидаю фотографию спереди!", reply_markup=kb.custom_button("Отказаться", "skip_photo"))
     await state.set_state(Registration.Photo1)
 
@@ -125,6 +147,7 @@ async def save_photo_front(mess: Message, state: FSMContext, bot: Bot):
         pass
     if not (os.path.isdir(f"{fun.home}/user_photo/{mess.from_user.id}")):
         os.mkdir(f"{fun.home}/user_photo/{mess.from_user.id}")
+    await state.update_data({"photo": 1})
     await bot.download(mess.photo[-1].file_id, destination=f"{fun.home}/user_photo/{mess.from_user.id}/front.jpg")
     await state.update_data({"photo1": mess.photo[-1].file_id})
     await mess.answer("Ожидаю фотографию сзади!")
@@ -164,9 +187,21 @@ async def check_photo(call: CallbackQuery, state: FSMContext):
 @router_reg.callback_query(Registration.Photo4, F.data == "next")
 async def view_date_start(call: CallbackQuery, state: FSMContext):
     await call.message.delete()
-    await state.set_state(Registration.DataStart)
-    await state.update_data({"photo": 1})
-    await call.message.answer("Пожалуйста, выберите дату старта курса", reply_markup=kb.kalendar())
+    await state.set_state(Registration.GroupIndividual)
+    await call.message.answer("Выберите как вы будите проходить курс: ",
+                              reply_markup=kb.group_individual())
+
+
+@router_reg.callback_query(Registration.GroupIndividual, F.data == "group")
+async def view_next_month(call: CallbackQuery, state: FSMContext):
+    with open(f"{fun.home}/file_mess_notif/group_info.json") as f:
+        data = json.load(f)
+    await call.message.edit_text(f"Перейдите по ссылке в беседу вашей группы: {data['link']}.\n"
+                                 f"Обучение начнется {data['date']}")
+    await state.update_data({"group_individual": "group", "data_start": data['date']})
+    data_user = await state.get_data()
+    save_data_user(call.message.from_user.id, data_user, call.message.from_user.username)
+    await state.clear()
 
 
 @router_reg.callback_query(Registration.DataStart, F.data.split("-")[0] == "next")
@@ -216,7 +251,8 @@ async def save_date_start(call: CallbackQuery, state: FSMContext):
                                   f"Рост: {data['height']}\n"
                                   f"Вес: {data['weight']}\n"
                                   f"Адрес: {data['address']}\n"
-                                  f"Контакт: {data['phone_email']}\n"
+                                  f"Контакт: {data['phone']}\n"
+                                  f"Email: {data['email']}\n"
                                   f"Дата начала курса: {data['data_start']}\n", reply_markup=kb.check_form())
         await state.set_state(Registration.Check)
     else:

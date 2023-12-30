@@ -19,11 +19,11 @@ def save_data_user_sheet(user_name, data: dict) -> int:
         photo = "Не загружены"
     try:
         list_row = [num_record, user_name, data['user_id'], data["full_name"], data["birthday"],
-                    data["timezone"], data["height"], data["weight"], data["address"], data["phone_email"],
-                    data["data_start"], photo]
+                    data["timezone"], data["height"], data["weight"], data["address"], data["phone"],
+                    data["email"], data["data_start"], photo, data["group_individual"]]
     except KeyError:
         list_row = [num_record, user_name, data['user_id'], data["full_name"], data["birthday"],
-                    data["timezone"], data["height"], data["weight"], data["address"], data["phone_email"],
-                    data["data_start"], photo]
+                    data["timezone"], data["height"], data["weight"], data["address"], data["phone"],
+                    data["email"], data["data_start"], photo, data["group_individual"]]
     worksheet.append_row(list_row)
     return num_record

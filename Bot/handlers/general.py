@@ -14,7 +14,7 @@ from Bot.BD.work_db import update_data_start, get_data_user, get_actual_mess, up
 router_general = Router()
 
 
-@router_general.message(CommandStart())
+@router_general.message(CommandStart(), StateFilter(None))
 async def start_main(mess: Message):
     await mess.answer("👋 Привет!)\n"
                       "Я - личный ассистент Марии, твой "
@@ -44,7 +44,8 @@ async def start_is_active(call: CallbackQuery, bot: Bot):
     if data_user["course_day"] == 0:
         await call.message.answer(f"ФИО: {data_user['full_name']}\n"
                                   f"Адрес: {data_user['address']}\n"
-                                  f"Контакт: {data_user['phone_email']}\n"
+                                  f"Контакт: {data_user['phone']}\n"
+                                  f"Email: {data_user['email']}\n"
                                   f"Дата старта: {data_user['data_start']}\n",
                                   reply_markup=kb.main_menu(True))
     else:

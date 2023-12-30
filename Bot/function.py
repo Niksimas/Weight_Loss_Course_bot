@@ -16,7 +16,7 @@ def check_data(data_str: str) -> bool:
 
 def creat_list_calendar(in_data: dt.date) -> dict:
     today = dt.date.today()
-    stop_day = today + dt.timedelta(days=15)
+    stop_day = today + dt.timedelta(days=30)
     "✖️"
     result = {"days": [
                   "-", "-", "-", "-", "-", "-", "-",

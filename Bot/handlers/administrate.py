@@ -1,5 +1,5 @@
 import os
-
+import json
 from aiogram.exceptions import *
 from aiogram import Router, F, Bot
 from aiogram.fsm.context import FSMContext
@@ -363,3 +363,64 @@ async def send_mess(mess: Message, bot: Bot, state: FSMContext):
     except (TelegramForbiddenError, TelegramBadRequest):
         await mess.answer("Сообщение не доставлено!")
     await state.clear()
+
+
+# ################################ Просмотр фотографий пользователя ##################################### #
+class EditGroupInfo(StatesGroup):
+    Choice = State()
+    Link = State()
+    Date = State()
+
+
+@router_admin.callback_query(F.data == "edit_group_info")
+async def choice_day_mess(call: CallbackQuery, state: FSMContext):
+    with open(f"{fun.home}/file_mess_notif/group_info.json") as f:
+        data = json.load(f)
+    await state.set_state(EditGroupInfo.Choice)
+    await state.set_data(data)
+    await call.message.edit_text(f"Ссылка: {data['link']}\n"
+                                 f"Дата: {data['date']}"
+                                 "\n\nЧто будем редактировать?:",
+                                 reply_markup=kb.edit_info_group())
+
+
+@router_admin.callback_query(F.data == "edit_link")
+async def choice_day_mess(call: CallbackQuery, state: FSMContext):
+    await state.set_state(EditGroupInfo.Link)
+    await call.message.edit_text("Отправьте новую ссылку:",
+                                 reply_markup=kb.custom_button("Отмена", "cancel_a"))
+
+
+@router_admin.message(EditGroupInfo.Link)
+async def send_mess(mess: Message, state: FSMContext):
+    text = mess.text
+    date = await state.get_data()
+    date["link"] = text
+    with open(f"{fun.home}/file_mess_notif/group_info.json", "w", encoding="utf-8") as f:
+        json.dump(date, f)
+    await mess.answer("Новая ссылка установлена!",
+                      reply_markup=kb.custom_button("В меню", "menu"))
+    await state.clear()
+
+
+@router_admin.callback_query(F.data == "edit_date")
+async def choice_day_mess(call: CallbackQuery, state: FSMContext):
+    await state.set_state(EditGroupInfo.Date)
+    await call.message.edit_text("Отправьте новую дату старта в формате ДД.ММ.ГГГГ",
+                                 reply_markup=kb.custom_button("Отмена", "cancel_a"))
+
+
+@router_admin.message(EditGroupInfo.Date)
+async def send_mess(mess: Message, state: FSMContext):
+    if fun.check_data(mess.text):
+        text = mess.text
+        date = await state.get_data()
+        date["date"] = text
+        with open(f"{fun.home}/file_mess_notif/group_info.json", "w", encoding="utf-8") as f:
+            json.dump(date, f)
+        await mess.answer("Новая дата установлена!",
+                          reply_markup=kb.custom_button("В меню", "menu"))
+        await state.clear()
+    else:
+        await mess.answer("В веденной дате ошибка. Напишите дату через \".\" в формате ДД.ММ.ГГГГ",
+                          reply_markup=kb.custom_button("Отмена", "cancel_a"))

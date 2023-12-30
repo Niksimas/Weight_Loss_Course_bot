@@ -156,3 +156,14 @@ def end_form() -> InlineKeyboardMarkup:
     ]
     keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)
     return keyboard
+
+
+def group_individual() -> InlineKeyboardMarkup:
+    buttons = [
+        [
+            InlineKeyboardButton(text="В группе", callback_data="group"),
+            InlineKeyboardButton(text="Индивидуально", callback_data="individual")
+        ]
+    ]
+    keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)
+    return keyboard

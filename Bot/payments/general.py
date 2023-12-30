@@ -13,13 +13,13 @@ router = Router()
 pay_token = config("pay_token")
 
 
-@router.callback_query(F.data == "course")
+@router.callback_query(Registration.GroupIndividual, F.data == "individual")
 async def start_not_active(call: CallbackQuery, bot: Bot):
     await call.message.delete()
     msg = await bot.send_invoice(
         call.from_user.id,
         title="Оплата курса",
-        description="Для доступа к курсу, необходимо оформить подписку!",
+        description="Оформление подписки!",
         payload="buy",
         provider_token=pay_token,
         currency="RUB",
@@ -39,6 +39,6 @@ async def process_successful_payment(mess: Message, state: FSMContext, bot: Bot)
     await bot.delete_message(mess.from_user.id, mess.message_id-1)
     await mess.answer("Спасибо за оплату!")
     update_activity_user(mess.from_user.id)
-    await state.set_state(Registration.TimeZone)
-    await mess.answer("Пожалуйста, выберите свой часовой пояс относительно 0 пояса\n"
-                      "(Москва - UTC+3)", reply_markup=kb.time_zone())
+    await state.set_state(Registration.DataStart)
+    await state.update_data({"group_individual": "individual"})
+    await mess.answer("Пожалуйста, выберите дату старта курса", reply_markup=kb.kalendar())

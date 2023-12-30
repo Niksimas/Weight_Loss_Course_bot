@@ -37,12 +37,13 @@ def save_data_user(user_id: int, data_dict: dict, user_name: str):
     with sqlite3.connect(f"{fun.home}/BD/main_data.db") as connect:
         data = [user_id, data_dict["full_name"], data_dict["birthday"], data_dict["timezone"],
                 data_dict["height"], data_dict["weight"], data_dict["address"],
-                data_dict["phone_email"], data_dict["data_start"], data_dict["photo"]]
+                data_dict["phone"], data_dict["email"], data_dict["data_start"],
+                data_dict["photo"], data_dict["group_individual"]]
         cursor = connect.cursor()
         cursor.execute('INSERT INTO main.data_user '
-                       '(user_id, full_name, birthday, timezone, height, weight, address, phone_email, '
-                       'data_start, photo) '
-                       'VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?);', data)
+                       '(user_id, full_name, birthday, timezone, height, weight, address, phone, email, '
+                       'data_start, photo, group_individual) '
+                       'VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);', data)
         save_data_user_sheet(user_name, data_dict)
 
 
@@ -85,8 +86,9 @@ def get_data_user(user_id: int) -> dict:
         data_dict = {
             "user_id": data_list[0], "full_name": data_list[1], "birthday": data_list[2],
             "timezone": data_list[3], "height": data_list[4], "weight": data_list[5],
-            "address": data_list[6], "phone_email": data_list[7], "data_start": data_list[8],
-            "course_day": data_list[9], "mess_id": data_list[10]
+            "address": data_list[6], "phone": data_list[7], "email": data_list[8],
+            "data_start": data_list[9], "course_day": data_list[10], "mess_id": data_list[11],
+            "photo": data_list[12], "group_individual": data_list[13]
         }
         return data_dict
 
