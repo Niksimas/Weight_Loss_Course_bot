@@ -10,7 +10,7 @@ from aiogram.types import Message, CallbackQuery, ReplyKeyboardRemove
 
 import Bot.function as fun
 import Bot.keyboard.general as kb
-from Bot.BD.work_db import save_data_user, update_photo_user
+from Bot.BD.work_db import save_data_user, update_activity_user
 
 router_reg = Router()
 
@@ -202,29 +202,35 @@ async def view_next_month(call: CallbackQuery, state: FSMContext):
     await state.update_data({"group_individual": "group", "data_start": data['date']})
     data_user = await state.get_data()
     save_data_user(call.from_user.id, data_user, call.message.from_user.username)
+    update_activity_user(call.from_user.id, 2)
     await state.clear()
 
 
+@router_reg.callback_query(Registration.DataStartR, F.data.split("-")[0] == "next")
 @router_reg.callback_query(Registration.DataStart, F.data.split("-")[0] == "next")
 async def view_next_month(call: CallbackQuery):
     in_data = dt.date(int(call.data.split("-")[1]), int(call.data.split("-")[2]), int(call.data.split("-")[3]))
-    if dt.date.today() + dt.timedelta(days=14) > in_data:
+    stop_day = dt.date.today() + dt.timedelta(days=30)
+    if dt.date(stop_day.year, stop_day.month, 1) > in_data:
         await call.message.edit_reply_markup(
-            reply_markup=kb.kalendar((dt.date(in_data.year, in_data.month, in_data.day)+dt.timedelta(days=31))))
+            reply_markup=kb.kalendar(fun.adding_month(in_data)))
     else:
         await call.answer("Доступных дат больше нет")
 
 
+@router_reg.callback_query(Registration.DataStartR, F.data.split("-")[0] == "back")
 @router_reg.callback_query(Registration.DataStart, F.data.split("-")[0] == "back")
 async def view_back_month(call: CallbackQuery):
     in_data = dt.date(int(call.data.split("-")[1]), int(call.data.split("-")[2]), int(call.data.split("-")[3]))
-    if dt.date.today() + dt.timedelta(days=14) < in_data:
+    stop_day = dt.date.today() + dt.timedelta(days=1)
+    if dt.date(stop_day.year, stop_day.month, 1) < in_data:
         await call.message.edit_reply_markup(
-            reply_markup=kb.kalendar((dt.date(in_data.year, in_data.month, in_data.day)-dt.timedelta(days=31))))
+            reply_markup=kb.kalendar(fun.subtracting_month(in_data)))
     else:
         await call.answer("Доступных дат больше нет")
 
 
+@router_reg.callback_query(Registration.DataStartR, F.data == "month")
 @router_reg.callback_query(Registration.DataStart, F.data == "month")
 async def answer_month(call: CallbackQuery):
     await call.answer("Выберите дату в представленном месяце")

@@ -98,35 +98,10 @@ async def edit_data_start(call: CallbackQuery, state: FSMContext):
     data = get_data_user(call.from_user.id)
     if data["course_day"] == 0:
         await state.set_state(Registration.DataStartR)
-        await call.message.answer("Пожалуйста, выберите дату старта курса", reply_markup=kb.kalendar())
+        await call.message.answer("Пожалуйста, выберите дату старта курса",
+                                  reply_markup=kb.kalendar(dt.date.today()+dt.timedelta(days=1)))
     else:
         await call.message.answer("Курс начнется меньше, чем через 5 часов. Дату старта нельзя изменить!")
-
-
-@router_general.callback_query(Registration.DataStartR, F.data.split("-")[0] == "next")
-async def view_next_month(call: CallbackQuery):
-    in_data = dt.date(int(call.data.split("-")[1]), int(call.data.split("-")[2]), int(call.data.split("-")[3]))
-    if dt.date.today() + dt.timedelta(days=14) > in_data:
-        await call.message.edit_reply_markup(
-            reply_markup=kb.kalendar((dt.date(in_data.year, in_data.month, in_data.day)+dt.timedelta(days=31))))
-    else:
-        await call.answer("Доступных дат больше нет")
-
-
-@router_general.callback_query(Registration.DataStartR, F.data.split("-")[0] == "back")
-async def view_back_month(call: CallbackQuery):
-    in_data = dt.date(int(call.data.split("-")[1]), int(call.data.split("-")[2]), int(call.data.split("-")[3]))
-    if dt.date.today() + dt.timedelta(days=14) < in_data:
-        await call.message.edit_reply_markup(
-            reply_markup=kb.kalendar((dt.date(in_data.year, in_data.month, in_data.day)-dt.timedelta(days=31))))
-    else:
-        await call.answer("Доступных дат больше нет")
-
-
-@router_general.callback_query(Registration.DataStartR, F.data == "month")
-async def answer_month(call: CallbackQuery, bot: Bot):
-    await call.answer("Выберите дату в представленном месяце")
-    await bot.answer_callback_query(call.id)
 
 
 @router_general.callback_query(Registration.DataStartR, F.data.split("-")[0] == "setd")

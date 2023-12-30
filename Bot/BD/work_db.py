@@ -143,11 +143,11 @@ def update_mess_notif(time: str, num_day: int, text: str, type_file: str):
                        f'WHERE num_day={num_day}', data)
 
 
-def update_activity_user(user_id: int):
+def update_activity_user(user_id: int, state: int):
     with sqlite3.connect(f"{fun.home}/BD/main_data.db") as connect:
         cursor = connect.cursor()
-        cursor.execute(f'UPDATE main.all_user SET activity=1 '
-                       f'WHERE user_id=$1', [user_id])
+        cursor.execute(f'UPDATE main.all_user SET activity=$1 '
+                       f'WHERE user_id=$2', [state, user_id])
 
 
 def update_data_start(user_id: int, new_data: str):

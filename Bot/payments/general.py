@@ -38,7 +38,7 @@ async def start_not_active(pre_checkout_query: PreCheckoutQuery):
 async def process_successful_payment(mess: Message, state: FSMContext, bot: Bot):
     await bot.delete_message(mess.from_user.id, mess.message_id-1)
     await mess.answer("Спасибо за оплату!")
-    update_activity_user(mess.from_user.id)
+    update_activity_user(mess.from_user.id, 1)
     await state.set_state(Registration.DataStart)
     await state.update_data({"group_individual": "individual"})
     await mess.answer("Пожалуйста, выберите дату старта курса", reply_markup=kb.kalendar())

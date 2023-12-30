@@ -20,10 +20,10 @@ token = config("token", default="000")
 bot = Bot(token, parse_mode="HTML")
 dp = Dispatcher(storage=MemoryStorage())
 
+dp.include_router(hand.router_admin)
 dp.include_router(hand.router_general)
 dp.include_router(pay.general.router)
 dp.include_router(hand.router_reg)
-dp.include_router(hand.router_admin)
 dp.include_router(hand.router_ff)
 
 if not os.path.exists(f"{home}/user_photo"):
