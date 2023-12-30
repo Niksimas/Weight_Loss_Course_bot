@@ -1,5 +1,6 @@
 import os
 import json
+import datetime as dt
 from aiogram.exceptions import *
 from aiogram import Router, F, Bot
 from aiogram.fsm.context import FSMContext
@@ -412,8 +413,14 @@ async def choice_day_mess(call: CallbackQuery, state: FSMContext):
 
 @router_admin.message(EditGroupInfo.Date)
 async def send_mess(mess: Message, state: FSMContext):
-    if fun.check_data(mess.text):
+    try:
         text = mess.text
+        data_list = [int(i) for i in text.split(".")]
+        data = dt.date(data_list[-1], data_list[1], data_list[0])
+        if data > dt.date.today():
+            await mess.answer("В веденной дате ошибка. Напишите дату через \".\" в формате ДД.ММ.ГГГГ",
+                              reply_markup=kb.custom_button("Отмена", "cancel_a"))
+            return
         date = await state.get_data()
         date["date"] = text
         with open(f"{fun.home}/file_mess_notif/group_info.json", "w", encoding="utf-8") as f:
@@ -421,6 +428,6 @@ async def send_mess(mess: Message, state: FSMContext):
         await mess.answer("Новая дата установлена!",
                           reply_markup=kb.custom_button("В меню", "menu"))
         await state.clear()
-    else:
+    except:
         await mess.answer("В веденной дате ошибка. Напишите дату через \".\" в формате ДД.ММ.ГГГГ",
                           reply_markup=kb.custom_button("Отмена", "cancel_a"))
