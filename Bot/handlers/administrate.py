@@ -417,7 +417,7 @@ async def send_mess(mess: Message, state: FSMContext):
         text = mess.text
         data_list = [int(i) for i in text.split(".")]
         data = dt.date(data_list[-1], data_list[1], data_list[0])
-        if data > dt.date.today():
+        if data < dt.date.today():
             await mess.answer("В веденной дате ошибка. Напишите дату через \".\" в формате ДД.ММ.ГГГГ",
                               reply_markup=kb.custom_button("Отмена", "cancel_a"))
             return
