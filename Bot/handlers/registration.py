@@ -28,7 +28,9 @@ class Registration(StatesGroup):
     Photo2 = State()
     Photo3 = State()
     Photo4 = State()
-    GroupIndividual = State()
+    ChoiceGI = State()
+    Group = State()
+    Individual = State()
     DataStart = State()
     DataStartR = State()
     Check = State()
@@ -109,13 +111,9 @@ async def save_phone(mess: Message, state: FSMContext):
 
 @router_reg.message(Registration.Email)
 async def save_phone(mess: Message, state: FSMContext):
-    await state.update_data({"del": mess.message_id})
-    try:
-        await state.update_data({"email": mess.contact.phone_number})
-    except AttributeError:
-        await state.update_data({"email": mess.text})
-    await mess.answer("Благодарим Вас за пройденный опрос.\n", reply_markup=ReplyKeyboardRemove())
+    await state.update_data({"del": mess.message_id, "email": mess.text})
     await mess.answer(
+        "Благодарим Вас за пройденный опрос.\n"
         "Для того, чтобы после прохождения курса вы смогли наглядно увидеть разницу до и после его прохождения, "
         "я рекомендую вам сделать фотографии 4 вашего тела (1 спереди, 1 сзади, 2 по бокам). "
         "\nПожалуйста сделайте их и отправьте последовательно в этот чат, "
@@ -130,7 +128,7 @@ async def save_phone(mess: Message, state: FSMContext):
 @router_reg.message(F.media_group_id, Registration.Photo2)
 @router_reg.message(F.media_group_id, Registration.Photo3)
 @router_reg.message(F.media_group_id, Registration.Photo4)
-async def save_photo_front(mess: Message, state: FSMContext, bot: Bot):
+async def save_photo_front(mess: Message, state: FSMContext):
     data = await state.get_data()
     try:
         b = data["group_id"]
@@ -187,22 +185,23 @@ async def check_photo(call: CallbackQuery, state: FSMContext):
 @router_reg.callback_query(Registration.Photo4, F.data == "next")
 async def view_date_start(call: CallbackQuery, state: FSMContext):
     await call.message.delete()
-    await state.set_state(Registration.GroupIndividual)
+    await state.set_state(Registration.ChoiceGI)
     await call.message.answer("Выберите как вы будите проходить курс: ",
                               reply_markup=kb.group_individual())
 
 
-@router_reg.callback_query(Registration.GroupIndividual, F.data == "group")
-async def view_next_month(call: CallbackQuery, state: FSMContext):
+@router_reg.message(Registration.Group, F.successful_payment)
+async def view_next_month(mess: Message, state: FSMContext, bot: Bot):
     with open(f"{fun.home}/file_mess_notif/group_info.json") as f:
         data = json.load(f)
-    await call.message.edit_text(f"Перейдите по ссылке в беседу вашей группы: {data['link']}.\n"
-                                 f"Обучение начнется {data['date']}",
-                                 reply_markup=kb.custom_button("В меню", "menu"))
+    await mess.answer(f"Перейдите по ссылке в беседу вашей группы: {data['link']}.\n"
+                      f"Обучение начнется {data['date']}",
+                      reply_markup=kb.custom_button("В меню", "menu"))
     await state.update_data({"group_individual": "group", "data_start": data['date']})
     data_user = await state.get_data()
-    save_data_user(call.from_user.id, data_user, call.message.from_user.username)
-    update_activity_user(call.from_user.id, 2)
+    await bot.delete_message(mess.from_user.id, data_user["del"])
+    save_data_user(mess.from_user.id, data_user, mess.from_user.username)
+    update_activity_user(mess.from_user.id, 2)
     await state.clear()
 
 
@@ -240,7 +239,15 @@ async def answer_month(call: CallbackQuery):
 async def save_date_start(call: CallbackQuery, state: FSMContext):
     if call.data.split("-")[1] != "":
         await call.message.delete()
-        await state.update_data({"data_start": f'{call.data.split("-")[1]}.{call.data.split("-")[2]}.{call.data.split("-")[3]}'})
+        if int(call.data.split("-")[2]) < 10:
+            month = f'0{call.data.split("-")[2]}'
+        else:
+            month = call.data.split("-")[2]
+        if int(call.data.split("-")[1]) < 10:
+            day = f'0{call.data.split("-")[1]}'
+        else:
+            day = call.data.split("-")[1]
+        await state.update_data({"data_start": f'{day}.{month}.{call.data.split("-")[3]}'})
         data = await state.get_data()
         try:
             media_group = MediaGroupBuilder()

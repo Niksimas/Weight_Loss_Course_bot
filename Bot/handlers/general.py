@@ -110,8 +110,16 @@ async def save_date_start(call: CallbackQuery, state: FSMContext, bot: Bot):
         await call.answer("Дата недоступна для выбора!")
         await bot.answer_callback_query(call.id)
         return
-    update_data_start(call.from_user.id, ".".join(call.data.split("-")[1:]))
-    await call.message.edit_text(f"Дата старта изменена на {'.'.join(call.data.split('-')[1:])}",
+    if int(call.data.split("-")[2]) < 10:
+        month = f'0{call.data.split("-")[2]}'
+    else:
+        month = call.data.split("-")[2]
+    if int(call.data.split("-")[1]) < 10:
+        day = f'0{call.data.split("-")[1]}'
+    else:
+        day = call.data.split("-")[1]
+    update_data_start(call.from_user.id, f'{day}.{month}.{call.data.split("-")[3]}')
+    await call.message.edit_text(f"Дата старта изменена на {day}.{month}.{call.data.split('-')[3]}",
                                  reply_markup=kb.custom_button("В меню", "menu"))
     await state.clear()
 

@@ -37,6 +37,7 @@ def creat_list_calendar(in_data: dt.date) -> dict:
             k += 1
         except ValueError:
             continue
+    stop_day = dt.date(stop_day.year, stop_day.month, 1)
     if in_data >= stop_day:
         result["back"] = "<<<"
     if in_data < stop_day:

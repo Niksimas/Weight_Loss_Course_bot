@@ -1,6 +1,5 @@
 import sqlite3
 import datetime as dt
-
 import Bot.function as fun
 from Bot.google_doc.googleSheets import save_data_user_sheet
 today = dt.date.today()
@@ -24,27 +23,42 @@ def check_activity_user(user_id: str) -> bool:
 
 
 def save_new_user(user_id: int, link: str):
-    with sqlite3.connect(f"{fun.home}/BD/main_data.db") as connect:
-        data = [user_id, link]
-        cursor = connect.cursor()
-        cursor.execute('SELECT EXISTS(SELECT * FROM all_user where user_id = $1)', [user_id])
-        if bool(cursor.fetchall()[0][0]):
-            return
-        cursor.execute('INSERT INTO main.all_user (user_id, link) VALUES(?, ?);', data)
+    try:
+        with sqlite3.connect(f"{fun.home}/BD/main_data.db") as connect:
+            data = [user_id, link]
+            cursor = connect.cursor()
+            cursor.execute('SELECT EXISTS(SELECT * FROM all_user where user_id = $1)', [user_id])
+            if bool(cursor.fetchall()[0][0]):
+                return
+            cursor.execute('INSERT INTO main.all_user (user_id, link) VALUES(?, ?);', data)
+    except:
+        pass
 
 
 def save_data_user(user_id: int, data_dict: dict, user_name: str):
-    with sqlite3.connect(f"{fun.home}/BD/main_data.db") as connect:
-        data = [user_id, data_dict["full_name"], data_dict["birthday"], data_dict["timezone"],
+    save_data_user_sheet(user_name, data_dict)
+    try:
+        with sqlite3.connect(f"{fun.home}/BD/main_data.db") as connect:
+            data = [user_id, data_dict["full_name"], data_dict["birthday"], data_dict["timezone"],
+                    data_dict["height"], data_dict["weight"], data_dict["address"],
+                    data_dict["phone"], data_dict["email"], data_dict["data_start"],
+                    data_dict["photo"], data_dict["group_individual"]]
+            cursor = connect.cursor()
+            cursor.execute('INSERT INTO main.data_user '
+                           '(user_id, full_name, birthday, timezone, height, weight, address, phone, email, '
+                           'data_start, photo, group_individual) '
+                           'VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);', data)
+    except sqlite3.IntegrityError:
+        data = [data_dict["full_name"], data_dict["birthday"], data_dict["timezone"],
                 data_dict["height"], data_dict["weight"], data_dict["address"],
                 data_dict["phone"], data_dict["email"], data_dict["data_start"],
-                data_dict["photo"], data_dict["group_individual"]]
-        cursor = connect.cursor()
-        cursor.execute('INSERT INTO main.data_user '
-                       '(user_id, full_name, birthday, timezone, height, weight, address, phone, email, '
-                       'data_start, photo, group_individual) '
-                       'VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);', data)
-        save_data_user_sheet(user_name, data_dict)
+                data_dict["photo"], data_dict["group_individual"], user_id]
+        cursor.execute('UPDATE main.data_user '
+                       'SET full_name=$1, birthday=$2, '
+                       'timezone=$3, height=$4, weight=$5, '
+                       'address=$6, phone=$7, email=$8, '
+                       'data_start=$9, photo=$10, group_individual=$11 '
+                       'WHERE user_id=$12', data)
 
 
 def get_id_all_user() -> list[int]:
@@ -132,6 +146,14 @@ def get_course_day_user(user_id: int) -> int:
         cursor.execute(f'select course_day from main.data_user where user_id=$1',
                        [user_id])
         data = cursor.fetchall()[0][0]
+        return data
+
+
+def get_activity_user() -> list:
+    with sqlite3.connect(f"{fun.home}/BD/main_data.db") as connect:
+        cursor = connect.cursor()
+        cursor.execute(f'select user_id from main.all_user where activity=2 or activity=1')
+        data = [i[0] for i in cursor.fetchall()]
         return data
 
 

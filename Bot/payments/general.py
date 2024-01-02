@@ -13,18 +13,37 @@ router = Router()
 pay_token = config("pay_token")
 
 
-@router.callback_query(Registration.GroupIndividual, F.data == "individual")
-async def start_not_active(call: CallbackQuery, bot: Bot):
+@router.callback_query(Registration.ChoiceGI, F.data == "individual")
+async def start_not_active(call: CallbackQuery, bot: Bot, state: FSMContext):
+    await call.message.delete()
+    await state.set_state(Registration.Individual)
+    msg = await bot.send_invoice(
+        call.from_user.id,
+        title="Оплата курса",
+        description="Оформление подписки для индивидуального обучения!",
+        payload="buy",
+        provider_token=pay_token,
+        currency="RUB",
+        prices=[LabeledPrice(label="Подписка", amount=20000)]
+    )
+    await state.update_data({"del": msg.message_id})
+    save_new_user(call.from_user.id, call.from_user.username)
+
+
+@router.callback_query(Registration.ChoiceGI, F.data == "group")
+async def start_not_active(call: CallbackQuery, bot: Bot, state: FSMContext):
     await call.message.delete()
     msg = await bot.send_invoice(
         call.from_user.id,
         title="Оплата курса",
-        description="Оформление подписки!",
+        description="Оформление подписки для обучения в группе!",
         payload="buy",
         provider_token=pay_token,
         currency="RUB",
         prices=[LabeledPrice(label="Подписка", amount=10000)]
     )
+    await state.set_state(Registration.Group)
+    await state.update_data({"del": msg.message_id})
     save_new_user(call.from_user.id, call.from_user.username)
 
 
@@ -34,9 +53,10 @@ async def start_not_active(pre_checkout_query: PreCheckoutQuery):
     await pre_checkout_query.answer(ok=True)
 
 
-@router.message(F.successful_payment)
+@router.message(F.successful_payment, Registration.Individual)
 async def process_successful_payment(mess: Message, state: FSMContext, bot: Bot):
-    await bot.delete_message(mess.from_user.id, mess.message_id-1)
+    data = await state.get_data()
+    await bot.delete_message(mess.from_user.id, data["del"])
     await mess.answer("Спасибо за оплату!")
     update_activity_user(mess.from_user.id, 1)
     await state.set_state(Registration.DataStart)

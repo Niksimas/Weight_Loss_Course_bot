@@ -70,7 +70,6 @@ async def dell_mess_info(user_id: int):
 
 # ################################-NIGHT-###################################### #
 async def process_night(timezone: int):
-    timezone = dt.datetime.today().time().hour
     user_list = get_timezone_user(timezone)
     for user_id in user_list:
         user_data = get_data_user(user_id)
@@ -78,6 +77,7 @@ async def process_night(timezone: int):
         if user_data["course_day"] == 31:
             await bot.send_message(user_id, "Подписка закончилась!")
             update_course_day(user_id, 0)
+            update_activity_user(user_id, 0)
         elif user_data["course_day"] == 0:
             date = dt.datetime.strptime(user_data["data_start"], '%d.%m.%Y').date()
             if ((dt.date.today() == date)and(user_data['group_individual']=="individual") ):
@@ -186,7 +186,10 @@ async def trigger_timezone_7():
 # ################################-EVENING-###################################### #
 async def process_evening(timezone: int):
     list_user = get_timezone_user(timezone)
+    activity_user = get_activity_user()
     for i in list_user:
+        if not (i in activity_user):
+            continue
         try:
             await bot.send_message(
                 i,

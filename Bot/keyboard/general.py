@@ -91,10 +91,14 @@ def check_form() -> InlineKeyboardMarkup:
 
 def kalendar(in_data: dt.date = dt.date.today()) -> InlineKeyboardMarkup:
     data_fun = fun.creat_list_calendar(in_data)
+    if in_data.month < 10:
+        month = f"0{in_data.month}"
+    else:
+        month = in_data.month
     buttons = [
         [
             InlineKeyboardButton(text=f"{data_fun['back']}", callback_data=f"back-{in_data}"),
-            InlineKeyboardButton(text=f"{in_data.month}.{in_data.year}", callback_data="month"),
+            InlineKeyboardButton(text=f"{month}.{in_data.year}", callback_data="month"),
             InlineKeyboardButton(text=f"{data_fun['next']}", callback_data=f"next-{in_data}")
         ],
         [
