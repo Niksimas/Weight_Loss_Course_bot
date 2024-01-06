@@ -22,7 +22,7 @@ def check_activity_user(user_id: str) -> bool:
         return False
 
 
-def save_new_user(user_id: int, link: str):
+def save_new_user(user_id: int, link: str) -> None:
     try:
         with sqlite3.connect(f"{fun.home}/BD/main_data.db") as connect:
             data = [user_id, link]
@@ -35,7 +35,7 @@ def save_new_user(user_id: int, link: str):
         pass
 
 
-def save_data_user(user_id: int, data_dict: dict, user_name: str):
+def save_data_user(user_id: int, data_dict: dict, user_name: str) -> None:
     save_data_user_sheet(user_name, data_dict)
     try:
         with sqlite3.connect(f"{fun.home}/BD/main_data.db") as connect:
@@ -136,7 +136,10 @@ def get_timezone_user(timezone: int) -> list:
         cursor = connect.cursor()
         cursor.execute(f'select user_id from main.data_user where timezone=$1',
                        [timezone])
-        data_list = [int(i) for i in cursor.fetchall()[0]]
+        try:
+            data_list = [int(i) for i in cursor.fetchall()[0]]
+        except:
+            data_list = []
         return data_list
 
 

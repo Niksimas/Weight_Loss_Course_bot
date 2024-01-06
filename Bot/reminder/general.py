@@ -1,4 +1,5 @@
 import os
+import shutil
 import asyncio
 import logging
 from decouple import config
@@ -64,7 +65,7 @@ async def dell_mess_info(user_id: int):
     for mess_id in data_user["mess_id"].split("\n"):
         try:
             await bot.delete_message(user_id, mess_id)
-        except TelegramBadRequest:
+        except:
             pass
 
 
@@ -73,11 +74,11 @@ async def process_night(timezone: int):
     user_list = get_timezone_user(timezone)
     for user_id in user_list:
         user_data = get_data_user(user_id)
-        await dell_mess_info(user_id)
         if user_data["course_day"] == 31:
             await bot.send_message(user_id, "Подписка закончилась!")
             update_course_day(user_id, 0)
             update_activity_user(user_id, 0)
+            shutil.rmtree(f"{fun.home}/user_photo/{user_id}")
         elif user_data["course_day"] == 0:
             date = dt.datetime.strptime(user_data["data_start"], '%d.%m.%Y').date()
             if ((dt.date.today() == date)and(user_data['group_individual']=="individual") ):
@@ -89,6 +90,7 @@ async def process_night(timezone: int):
             update_course_day(user_id, user_data["course_day"] + 1)
         else:
             update_course_day(user_id, user_data["course_day"] + 1)
+        await dell_mess_info(user_id)
 
 
 @scheduler2.scheduled_job("cron", hour=0, minute=0)

@@ -9,6 +9,7 @@ def menu_admin() -> InlineKeyboardMarkup:
         [InlineKeyboardButton(text="Отправить личное сообщение", callback_data="send_mess_user")],
         [InlineKeyboardButton(text="Просмотреть фотографии пользователя", callback_data="view_photo")],
         [InlineKeyboardButton(text="Изменить информацию групп. обучения", callback_data="edit_group_info")],
+        [InlineKeyboardButton(text="Изменить цены на обучение", callback_data="edit_amount")],
         [InlineKeyboardButton(text="В меню", callback_data="menu")]
     ]
     keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)
@@ -64,6 +65,16 @@ def edit_info_group():
     buttons = [
         [InlineKeyboardButton(text="Ссылку", callback_data=f"edit_link")],
         [InlineKeyboardButton(text="Дату начала", callback_data=f"edit_date")],
+        [InlineKeyboardButton(text="Назад", callback_data="cancel_a")],
+    ]
+    keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)
+    return keyboard
+
+
+def edit_amount():
+    buttons = [
+        [InlineKeyboardButton(text="Групповое", callback_data=f"edit_group")],
+        [InlineKeyboardButton(text="Индивидуальное", callback_data=f"edit_individual")],
         [InlineKeyboardButton(text="Назад", callback_data="cancel_a")],
     ]
     keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)

@@ -431,3 +431,55 @@ async def send_mess(mess: Message, state: FSMContext):
     except:
         await mess.answer("В веденной дате ошибка. Напишите дату через \".\" в формате ДД.ММ.ГГГГ",
                           reply_markup=kb.custom_button("Отмена", "cancel_a"))
+
+
+# ################################ Редактирование цен ##################################### #
+class EditAmount(StatesGroup):
+    Choice = State()
+    SetAmount = State()
+
+
+@router_admin.callback_query(F.data == "edit_amount")
+async def choice_day_mess(call: CallbackQuery, state: FSMContext):
+    with open(f"{fun.home}/payments/amount.json") as f:
+        data = json.load(f)
+    await state.set_state(EditAmount.Choice)
+    await state.set_data(data)
+    await call.message.edit_text(f"Прохождение в группе: {data['group']/100} руб.\n"
+                                 f"Прохождение индивидуально: {data['individual']/100} руб.\n"
+                                 "Что будем редактировать?",
+                                 reply_markup=kb.edit_amount())
+
+
+@router_admin.callback_query(EditAmount.Choice)
+async def choice_day_mess(call: CallbackQuery, state: FSMContext):
+    await state.set_state(EditAmount.SetAmount)
+    type_amount = call.data.split("_")[1]
+    await state.set_data({"type_amount": type_amount})
+    if type_amount == "group":
+        type_amount_text = "группового"
+    else:
+        type_amount_text = "индивидуального"
+    msg = await call.message.edit_text(f"Введите цену для {type_amount_text} прохождения в рублях: ",
+                                 reply_markup=kb.custom_button("Отмена", "cancel_a"))
+    await state.update_data({"del": msg.message_id})
+
+
+@router_admin.message(EditAmount.SetAmount)
+async def send_mess(mess: Message, state: FSMContext, bot: Bot):
+        data = await state.get_data()
+        await bot.edit_message_reply_markup(mess.from_user.id, data['del'])
+        try:
+            new_amount = int(mess.text) * 100
+            with open(f"{fun.home}/payments/amount.json", "r", encoding="utf-8") as f:
+                data_file = json.load(f)
+            data_file[data['type_amount']] = new_amount
+            with open(f"{fun.home}/payments/amount.json", "w", encoding="utf-8") as f:
+                json.dump(data_file, f)
+            await mess.answer("Новая стоимость установлена!",
+                              reply_markup=kb.custom_button("В меню", "menu"))
+            await state.clear()
+        except ValueError:
+            msg = await mess.answer("Введенные данные не являются числом. Попробуйте ещё раз!",
+                                    reply_markup=kb.custom_button("Отмена", "cancel_a"))
+            await state.update_data({"del": msg.message_id})

@@ -1,3 +1,4 @@
+import json
 from decouple import config
 
 from aiogram import Router, F, Bot
@@ -7,7 +8,7 @@ from aiogram.types import Message, LabeledPrice, PreCheckoutQuery, CallbackQuery
 import Bot.keyboard.general as kb
 from Bot.handlers.registration import Registration
 from Bot.BD.work_db import save_new_user, update_activity_user
-
+import Bot.function as fun
 
 router = Router()
 pay_token = config("pay_token")
@@ -17,6 +18,8 @@ pay_token = config("pay_token")
 async def start_not_active(call: CallbackQuery, bot: Bot, state: FSMContext):
     await call.message.delete()
     await state.set_state(Registration.Individual)
+    with open(f"{fun.home}/payments/amount.json") as f:
+        amount = json.load(f)['individual']
     msg = await bot.send_invoice(
         call.from_user.id,
         title="Оплата курса",
@@ -24,7 +27,7 @@ async def start_not_active(call: CallbackQuery, bot: Bot, state: FSMContext):
         payload="buy",
         provider_token=pay_token,
         currency="RUB",
-        prices=[LabeledPrice(label="Подписка", amount=20000)]
+        prices=[LabeledPrice(label="Подписка", amount=amount)]
     )
     await state.update_data({"del": msg.message_id})
     save_new_user(call.from_user.id, call.from_user.username)
@@ -32,6 +35,8 @@ async def start_not_active(call: CallbackQuery, bot: Bot, state: FSMContext):
 
 @router.callback_query(Registration.ChoiceGI, F.data == "group")
 async def start_not_active(call: CallbackQuery, bot: Bot, state: FSMContext):
+    with open(f"{fun.home}/payments/amount.json") as f:
+        amount = json.load(f)['group']
     await call.message.delete()
     msg = await bot.send_invoice(
         call.from_user.id,
@@ -40,7 +45,7 @@ async def start_not_active(call: CallbackQuery, bot: Bot, state: FSMContext):
         payload="buy",
         provider_token=pay_token,
         currency="RUB",
-        prices=[LabeledPrice(label="Подписка", amount=10000)]
+        prices=[LabeledPrice(label="Подписка", amount=amount)]
     )
     await state.set_state(Registration.Group)
     await state.update_data({"del": msg.message_id})
