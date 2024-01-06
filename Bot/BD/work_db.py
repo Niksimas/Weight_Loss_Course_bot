@@ -215,3 +215,10 @@ def update_photo_user(user_id: int):
         cursor = connect.cursor()
         cursor.execute(f'UPDATE main.data_user SET photo=$1 '
                        f'WHERE user_id=$2', [1, user_id])
+
+
+def deleted_record_user(user_id: int):
+    with sqlite3.connect(f"{fun.home}/BD/main_data.db") as connect:
+        cursor = connect.cursor()
+        cursor.execute(f'DELETE FROM main.data_user WHERE user_id=$1',
+                       [user_id])

@@ -14,12 +14,18 @@ from Bot.BD.work_db import update_data_start, get_data_user, get_actual_mess, up
 router_general = Router()
 
 
-@router_general.message(CommandStart(), StateFilter(None))
-async def start_main(mess: Message):
+@router_general.message(CommandStart())
+async def start_main(mess: Message, state: FSMContext, bot: Bot):
     await mess.answer("👋 Привет!)\n"
                       "Я - личный ассистент Марии, твой "
                       "помощник по прохождению обучения \"Голодание\"",
                       reply_markup=kb.main_start(mess.from_user.id))
+    if await state.get_state() is not None:
+        date = await state.get_data()
+        try:
+            await bot.edit_message_reply_markup(mess.from_user.id, date["del"])
+        except:
+            pass
 
 
 @router_general.callback_query(F.data == "menu", StateFilter(None))

@@ -1,12 +1,13 @@
 import os
 import json
 import datetime as dt
+
 from aiogram import Bot, Router, F
+from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.utils.media_group import MediaGroupBuilder
 from aiogram.types import Message, CallbackQuery, ReplyKeyboardRemove
-
 
 import Bot.function as fun
 import Bot.keyboard.general as kb
@@ -36,11 +37,12 @@ class Registration(StatesGroup):
     Check = State()
 
 
-@router_reg.callback_query(F.data == "course")
-async def process_successful_payment(call: CallbackQuery, state: FSMContext):
+@router_reg.callback_query(F.data == "course", StateFilter(None, Registration.TimeZone))
+async def call_course(call: CallbackQuery, state: FSMContext):
     await state.set_state(Registration.TimeZone)
-    await call.message.edit_text("Пожалуйста, выберите свой часовой пояс относительно 0 пояса\n"
+    msg = await call.message.edit_text("Пожалуйста, выберите свой часовой пояс относительно 0 пояса\n"
                                  "(Москва - UTC+3)", reply_markup=kb.time_zone())
+    await state.update_data({"del": msg.message_id})
 
 
 @router_reg.callback_query(F.data.split("_")[0] == "tz", Registration.TimeZone)
@@ -50,11 +52,22 @@ async def save_timezone(call: CallbackQuery, state: FSMContext):
     await state.set_state(Registration.FullName)
 
 
+@router_reg.callback_query(F.data == "course", Registration.FullName)
+async def save_full_name(call: CallbackQuery):
+    msg = await call.message.edit_text("Пожалуйста, введите ваши ФИО", reply_markup=None)
+
+
 @router_reg.message(Registration.FullName)
 async def save_full_name(mess: Message, state: FSMContext):
     await state.update_data({"full_name": mess.text})
     await mess.answer("Пожалуйста, введите вашу дату рождения в формате «ДД.ММ.ГГГГ»\nПример: «07.08.1984»")
     await state.set_state(Registration.Birthday)
+
+
+@router_reg.callback_query(F.data == "course", Registration.Birthday)
+async def save_full_name(call: CallbackQuery):
+    await call.message.edit_text("Пожалуйста, введите вашу дату рождения в формате «ДД.ММ.ГГГГ»\nПример: «07.08.1984»",
+                                 reply_markup=None)
 
 
 @router_reg.message(Registration.Birthday)
@@ -68,6 +81,12 @@ async def save_birthday(mess: Message, state: FSMContext):
                           "Пожалуйста, введите вашу дату рождения в формате «ДД.ММ.ГГГГ»\nПример: «07.08.1984»")
 
 
+@router_reg.callback_query(F.data == "course", Registration.Height)
+async def save_full_name(call: CallbackQuery):
+    await call.message.edit_text("Пожалуйста, введите ваш рост цифрами (в см)",
+                                 reply_markup=None)
+
+
 @router_reg.message(Registration.Height)
 async def save_height(mess: Message, state: FSMContext):
     try:
@@ -77,6 +96,12 @@ async def save_height(mess: Message, state: FSMContext):
         await state.set_state(Registration.Weight)
     except ValueError:
         await mess.answer("Введите только число!")
+
+
+@router_reg.callback_query(F.data == "course", Registration.Weight)
+async def save_full_name(call: CallbackQuery):
+    await call.message.edit_text("Пожалуйста, введите ваш вес цифрами (в кг)",
+                                 reply_markup=None)
 
 
 @router_reg.message(Registration.Weight)
@@ -91,12 +116,27 @@ async def save_weight(mess: Message, state: FSMContext):
         await mess.answer("Введите только число!")
 
 
+@router_reg.callback_query(F.data == "course", Registration.Address)
+async def save_full_name(call: CallbackQuery):
+    await call.message.edit_text("Пожалуйста, напишите Ваш адрес, чтобы мы могли отправить продукцию к курсу. "
+                                 "\nЖелательный формат: Область, Город, Улица, Дом, Квартира",
+                                 reply_markup=None)
+
+
 @router_reg.message(Registration.Address)
 async def save_address(mess: Message, state: FSMContext):
     await state.update_data({"address": mess.text})
     await mess.answer("Пожалуйста, напишите, свой номер телефона или нажмите на кнопку \"Поделиться контактом\", "
                       "чтобы мы могли уведомить Вас о поступлении товара", reply_markup=kb.share_number())
     await state.set_state(Registration.Phone)
+
+
+@router_reg.callback_query(F.data == "course", Registration.Phone)
+async def save_full_name(call: CallbackQuery):
+    await call.message.delete()
+    await call.message.answer("Пожалуйста, напишите, свой номер телефона или нажмите на кнопку "
+                                 "\"Поделиться контактом\", чтобы мы могли уведомить Вас о поступлении товара",
+                                 reply_markup=kb.share_number())
 
 
 @router_reg.message(Registration.Phone)
@@ -109,10 +149,14 @@ async def save_phone(mess: Message, state: FSMContext):
     await state.set_state(Registration.Email)
 
 
+@router_reg.callback_query(F.data == "course", Registration.Email)
+async def save_full_name(call: CallbackQuery):
+    await call.message.edit_text("Пожалуйста, напишите email", reply_markup=None)
+
+
 @router_reg.message(Registration.Email)
 async def save_phone(mess: Message, state: FSMContext):
-    await state.update_data({"del": mess.message_id, "email": mess.text})
-    await mess.answer(
+    msg = await mess.answer(
         "Благодарим Вас за пройденный опрос.\n"
         "Для того, чтобы после прохождения курса вы смогли наглядно увидеть разницу до и после его прохождения, "
         "я рекомендую вам сделать фотографии 4 вашего тела (1 спереди, 1 сзади, 2 по бокам). "
@@ -121,7 +165,22 @@ async def save_phone(mess: Message, state: FSMContext):
         "Если не хотите делиться фото, сделайте его для себя и сохраните, для того, "
         "чтобы наглядно увидеть результат по прохождению курса\n\n"
         "Ожидаю фотографию спереди!", reply_markup=kb.custom_button("Отказаться", "skip_photo"))
+    await state.update_data({"del": msg.message_id, "email": mess.text})
     await state.set_state(Registration.Photo1)
+
+
+@router_reg.callback_query(F.data == "course", Registration.Photo1)
+async def save_full_name(call: CallbackQuery):
+    await call.message.edit_text(
+        "Благодарим Вас за пройденный опрос.\n"
+        "Для того, чтобы после прохождения курса вы смогли наглядно увидеть разницу до и после его прохождения, "
+        "я рекомендую вам сделать фотографии 4 вашего тела (1 спереди, 1 сзади, 2 по бокам). "
+        "\nПожалуйста сделайте их и отправьте последовательно в этот чат, "
+        "чтобы по итогу прохождения получить коллаж «До/После»\n\n"
+        "Если не хотите делиться фото, сделайте его для себя и сохраните, для того, "
+        "чтобы наглядно увидеть результат по прохождению курса\n\n"
+        "Ожидаю фотографию спереди!",
+        reply_markup=kb.custom_button("Отказаться", "skip_photo"))
 
 
 @router_reg.message(F.media_group_id, Registration.Photo1)
@@ -152,12 +211,22 @@ async def save_photo_front(mess: Message, state: FSMContext, bot: Bot):
     await state.set_state(Registration.Photo2)
 
 
+@router_reg.callback_query(F.data == "course", Registration.Photo2)
+async def save_full_name(call: CallbackQuery):
+    await call.message.edit_text("Ожидаю фотографию сзади!", reply_markup=None)
+
+
 @router_reg.message(F.photo, Registration.Photo2)
 async def save_photo_behind(mess: Message, state: FSMContext, bot: Bot):
     await bot.download(mess.photo[-1].file_id, destination=f"{fun.home}/user_photo/{mess.from_user.id}/behind.jpg")
     await state.update_data({"photo2": mess.photo[-1].file_id})
     await mess.answer("Ожидаю фотографию слева!")
     await state.set_state(Registration.Photo3)
+
+
+@router_reg.callback_query(F.data == "course", Registration.Photo3)
+async def save_full_name(call: CallbackQuery):
+    await call.message.edit_text("Ожидаю фотографию слева!", reply_markup=None)
 
 
 @router_reg.message(F.photo, Registration.Photo3)
@@ -168,11 +237,21 @@ async def save_photo_front_side_l(mess: Message, state: FSMContext, bot: Bot):
     await state.set_state(Registration.Photo4)
 
 
+@router_reg.callback_query(F.data == "course", Registration.Photo4)
+async def save_full_name(call: CallbackQuery):
+    await call.message.edit_text("Ожидаю фотографию справа!", reply_markup=None)
+
+
 @router_reg.message(F.photo, Registration.Photo4)
 async def save_photo_side_r(mess: Message, state: FSMContext, bot: Bot):
     await bot.download(mess.photo[-1].file_id, destination=f"{fun.home}/user_photo/{mess.from_user.id}/side_r.jpg")
     await state.update_data({"photo4": mess.photo[-1].file_id})
     await mess.answer("Отлично, все фотографии приняты!", reply_markup=kb.check_photo())
+
+
+@router_reg.message(StateFilter(Registration.Photo1, Registration.Photo2, Registration.Photo3, Registration.Photo4))
+async def answer_text_in_foto(mess: Message):
+    await mess.answer("Необходимо отправить фотографию!")
 
 
 @router_reg.callback_query(Registration.Photo4, F.data == "restart_photo")
@@ -181,6 +260,7 @@ async def check_photo(call: CallbackQuery, state: FSMContext):
     await call.message.answer("Ожидаю фотографию спереди!")
 
 
+@router_reg.callback_query(F.data == "course", StateFilter(Registration.ChoiceGI, Registration.Group, Registration.Individual))
 @router_reg.callback_query(Registration.Photo1, F.data == "skip_photo")
 @router_reg.callback_query(Registration.Photo4, F.data == "next")
 async def view_date_start(call: CallbackQuery, state: FSMContext):

@@ -79,6 +79,7 @@ async def process_night(timezone: int):
             update_course_day(user_id, 0)
             update_activity_user(user_id, 0)
             shutil.rmtree(f"{fun.home}/user_photo/{user_id}")
+            deleted_record_user(user_id)
         elif user_data["course_day"] == 0:
             date = dt.datetime.strptime(user_data["data_start"], '%d.%m.%Y').date()
             if ((dt.date.today() == date)and(user_data['group_individual']=="individual") ):
