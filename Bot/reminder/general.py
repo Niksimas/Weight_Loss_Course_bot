@@ -95,94 +95,94 @@ async def process_night(timezone: int):
 
 
 @scheduler2.scheduled_job("cron", hour=0, minute=0)
-async def trigger_timezone_2():
+async def trigger_night_timezone_2():
     await process_night(2)
 
 
 @scheduler3.scheduled_job("cron", hour=0, minute=0)
-async def trigger_timezone_3():
+async def trigger_night_timezone_3():
     await process_night(3)
     
 
 @scheduler4.scheduled_job("cron", hour=0, minute=0)
-async def trigger_timezone_4():
+async def trigger_night_timezone_4():
     await process_night(4)
   
     
 @scheduler5.scheduled_job("cron", hour=0, minute=0)
-async def trigger_timezone_5():
+async def trigger_night_timezone_5():
     await process_night(5)
     
     
 @scheduler6.scheduled_job("cron", hour=0, minute=0)
-async def trigger_timezone_6():
+async def trigger_night_timezone_6():
     await process_night(6)
     
     
 @scheduler7.scheduled_job("cron", hour=0, minute=0)
-async def trigger_timezone_7():
+async def trigger_night_timezone_7():
     await process_night(7)
 
 
 # ################################-MORNING-###################################### #
 @scheduler2.scheduled_job("cron", hour=5, minute=0)
-async def trigger_timezone_2():
+async def trigger_morning_timezone_2():
     await main_process("morning", 2)
 
 
 @scheduler3.scheduled_job("cron", hour=5, minute=0)
-async def trigger_timezone_3():
+async def trigger_morning_timezone_3():
     await main_process("morning", 3)
 
 
 @scheduler4.scheduled_job("cron", hour=5, minute=0)
-async def trigger_timezone_4():
+async def trigger_morning_timezone_4():
     await main_process("morning", 4)
 
 
 @scheduler5.scheduled_job("cron", hour=5, minute=0)
-async def trigger_timezone_5():
+async def trigger_morning_timezone_5():
     await main_process("morning", 5)
 
 
 @scheduler6.scheduled_job("cron", hour=5, minute=0)
-async def trigger_timezone_6():
+async def trigger_morning_timezone_6():
     await main_process("morning", 6)
 
 
 @scheduler7.scheduled_job("cron", hour=5, minute=0)
-async def trigger_timezone_7():
+async def trigger_morning_timezone_7():
     await main_process("morning", 7)
 
 
 # ################################-DAY-###################################### #
 @scheduler2.scheduled_job("cron", hour=13, minute=0)
-async def trigger_timezone_2():
+async def trigger_day_timezone_2():
     await main_process("day", 2)
 
 
 @scheduler3.scheduled_job("cron", hour=13, minute=0)
-async def trigger_timezone_3():
+async def trigger_day_timezone_3():
     await main_process("day", 3)
 
 
 @scheduler4.scheduled_job("cron", hour=13, minute=0)
-async def trigger_timezone_4():
+async def trigger_day_timezone_4():
     await main_process("day", 4)
 
 
 @scheduler5.scheduled_job("cron", hour=13, minute=0)
-async def trigger_timezone_5():
+async def trigger_day_timezone_5():
     await main_process("day", 5)
 
 
 @scheduler6.scheduled_job("cron", hour=13, minute=0)
-async def trigger_timezone_6():
+async def trigger_day_timezone_6():
     await main_process("day", 6)
 
 
 @scheduler7.scheduled_job("cron", hour=13, minute=0)
-async def trigger_timezone_7():
+async def trigger_day_timezone_7():
     await main_process("day", 7)
 
 
@@ -204,32 +204,32 @@ async def process_evening(timezone: int):
 
 
 @scheduler2.scheduled_job("cron", hour=21, minute=0)
-async def trigger_timezone_2():
+async def trigger_evening_timezone_2():
     await process_evening(2)
 
 
 @scheduler3.scheduled_job("cron", hour=21, minute=0)
-async def trigger_timezone_3():
+async def trigger_evening_timezone_3():
     await process_evening(3)
 
 
 @scheduler4.scheduled_job("cron", hour=21, minute=0)
-async def trigger_timezone_4():
+async def trigger_evening_timezone_4():
     await process_evening(4)
 
 
 @scheduler5.scheduled_job("cron", hour=21, minute=0)
-async def trigger_timezone_5():
+async def trigger_evening_timezone_5():
     await process_evening(5)
 
 
 @scheduler6.scheduled_job("cron", hour=21, minute=0)
-async def trigger_timezone_6():
+async def trigger_evening_timezone_6():
     await process_evening(6)
 
 
 @scheduler7.scheduled_job("cron", hour=21, minute=0)
-async def trigger_timezone_7():
+async def trigger_evening_timezone_7():
     await process_evening(7)
 
 

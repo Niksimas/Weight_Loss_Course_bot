@@ -137,7 +137,7 @@ def get_timezone_user(timezone: int) -> list:
         cursor.execute(f'select user_id from main.data_user where timezone=$1',
                        [timezone])
         try:
-            data_list = [int(i) for i in cursor.fetchall()[0]]
+            data_list = [int(i[0]) for i in cursor.fetchall()]
         except:
             data_list = []
         return data_list
