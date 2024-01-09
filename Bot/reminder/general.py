@@ -45,9 +45,9 @@ async def main_process(time: str, timezone: int):
                                      caption=mess_data[0])
             elif mess_data[1] == "doc":
                 file = os.listdir(f"{fun.home}/file_mess_notif/{day}")
-                for i in file:
-                    if i.split(".")[0] == "file":
-                        file = i
+                for j in file:
+                    if j.split(".")[0] == "file":
+                        file = j
                         break
                 msg = await bot.send_document(i,
                                         FSInputFile(f"{fun.home}/file_mess_notif/{day}/{file}"),
@@ -55,7 +55,7 @@ async def main_process(time: str, timezone: int):
             elif mess_data[1] == "video":
                 msg = await bot.send_video(i, FSInputFile(f"{fun.home}/file_mess_notif/{day}/video.mp4"),
                                      caption=mess_data[0])
-            update_mess_id_user(i, mess_id+str(msg.message_id)+"\n")
+            update_mess_id_user(i, mess_id+"\n"+str(msg.message_id)+"\n")
         except (TelegramForbiddenError, TelegramBadRequest):
             await bot.send_message(get_id_all_user()[0], f"Пользователю {i}, сообщение не доставлено!")
 
@@ -67,6 +67,7 @@ async def dell_mess_info(user_id: int):
             await bot.delete_message(user_id, mess_id)
         except:
             pass
+    update_mess_id_user(user_id, "o")
 
 
 # ################################-NIGHT-###################################### #

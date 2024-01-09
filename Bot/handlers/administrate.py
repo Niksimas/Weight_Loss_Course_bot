@@ -257,7 +257,8 @@ async def edit_mess_notif(call: CallbackQuery, state: FSMContext):
     await state.set_state(EditMessDay.SetMess)
     if call.data.split("_")[0] == "edit":
         await state.set_data({"num_day": int(call.data.split("_")[-1]), "time": call.data.split("_")[1]})
-    await call.message.edit_text("Пожалуйста, отправьте информацию одним сообщением",
+    await call.message.delete()
+    await call.message.answer("Пожалуйста, отправьте информацию одним сообщением",
                                  reply_markup=kb.custom_button("Отмена", "cancel_a"))
 
 
