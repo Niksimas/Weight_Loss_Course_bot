@@ -1,6 +1,16 @@
 import os
+import pytz
 import datetime as dt
 home = os.path.dirname(__file__)
+
+tz = {
+    "tz2": pytz.timezone("Europe/Kaliningrad"),
+    "tz3": pytz.timezone("Europe/Moscow"),
+    "tz4": pytz.timezone("Europe/Samara"),
+    "tz5": pytz.timezone("Asia/Yekaterinburg"),
+    "tz6": pytz.timezone("Asia/Omsk"),
+    "tz7": pytz.timezone("Asia/Novosibirsk")
+}
 
 
 def check_data(data_str: str) -> bool:

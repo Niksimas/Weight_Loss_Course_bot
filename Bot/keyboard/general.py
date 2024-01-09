@@ -1,6 +1,6 @@
 import datetime as dt
 from aiogram.types import (InlineKeyboardButton, InlineKeyboardMarkup,
-                           KeyboardButton, ReplyKeyboardMarkup, WebAppInfo)
+                           KeyboardButton, ReplyKeyboardMarkup)
 import Bot.function as fun
 from Bot.BD.work_db import get_id_admin
 
@@ -89,7 +89,7 @@ def check_form() -> InlineKeyboardMarkup:
     return keyboard
 
 
-def kalendar(in_data: dt.date = dt.date.today()) -> InlineKeyboardMarkup:
+def kalendar(in_data: dt.date) -> InlineKeyboardMarkup:
     data_fun = fun.creat_list_calendar(in_data)
     if in_data.month < 10:
         month = f"0{in_data.month}"

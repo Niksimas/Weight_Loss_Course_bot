@@ -18,7 +18,6 @@ router_admin = Router()
 router_admin.message.filter(F.from_user.id.in_(get_id_admin()))
 
 
-
 @router_admin.message(Command("admin"), StateFilter(None))
 async def start_is_active(mess: Message):
     await mess.answer("Выберите действие", reply_markup=kb.menu_admin())
@@ -204,12 +203,11 @@ async def choice_day_mess(call: CallbackQuery, state: FSMContext):
 @router_admin.callback_query(EditMessDay.Check, F.data.split("_")[0] == "back")
 @router_admin.callback_query(EditMessDay.Day)
 async def choice_time_day(call: CallbackQuery, state: FSMContext):
-    data = await state.get_data()
     await state.set_state(EditMessDay.Time)
     num_day = call.data.split("_")[-1]
     await call.message.delete()
     await call.message.answer(f"Пожалуйста, выберите сообщение {num_day} дня: ",
-                                 reply_markup=kb.time_mess(num_day))
+                              reply_markup=kb.time_mess(num_day))
 
 
 @router_admin.callback_query(EditMessDay.Time)
@@ -259,7 +257,7 @@ async def edit_mess_notif(call: CallbackQuery, state: FSMContext):
         await state.set_data({"num_day": int(call.data.split("_")[-1]), "time": call.data.split("_")[1]})
     await call.message.delete()
     await call.message.answer("Пожалуйста, отправьте информацию одним сообщением",
-                                 reply_markup=kb.custom_button("Отмена", "cancel_a"))
+                              reply_markup=kb.custom_button("Отмена", "cancel_a"))
 
 
 @router_admin.message(F.text, EditMessDay.SetMess)
@@ -462,25 +460,25 @@ async def choice_day_mess(call: CallbackQuery, state: FSMContext):
     else:
         type_amount_text = "индивидуального"
     msg = await call.message.edit_text(f"Введите цену для {type_amount_text} прохождения в рублях: ",
-                                 reply_markup=kb.custom_button("Отмена", "cancel_a"))
+                                       reply_markup=kb.custom_button("Отмена", "cancel_a"))
     await state.update_data({"del": msg.message_id})
 
 
 @router_admin.message(EditAmount.SetAmount)
 async def send_mess(mess: Message, state: FSMContext, bot: Bot):
-        data = await state.get_data()
-        await bot.edit_message_reply_markup(mess.from_user.id, data['del'])
-        try:
-            new_amount = int(mess.text) * 100
-            with open(f"{fun.home}/payments/amount.json", "r", encoding="utf-8") as f:
-                data_file = json.load(f)
-            data_file[data['type_amount']] = new_amount
-            with open(f"{fun.home}/payments/amount.json", "w", encoding="utf-8") as f:
-                json.dump(data_file, f)
-            await mess.answer("Новая стоимость установлена!",
-                              reply_markup=kb.custom_button("В меню", "menu"))
-            await state.clear()
-        except ValueError:
-            msg = await mess.answer("Введенные данные не являются числом. Попробуйте ещё раз!",
-                                    reply_markup=kb.custom_button("Отмена", "cancel_a"))
-            await state.update_data({"del": msg.message_id})
+    data = await state.get_data()
+    await bot.edit_message_reply_markup(mess.from_user.id, data['del'])
+    try:
+        new_amount = int(mess.text) * 100
+        with open(f"{fun.home}/payments/amount.json", "r", encoding="utf-8") as f:
+            data_file = json.load(f)
+        data_file[data['type_amount']] = new_amount
+        with open(f"{fun.home}/payments/amount.json", "w", encoding="utf-8") as f:
+            json.dump(data_file, f)
+        await mess.answer("Новая стоимость установлена!",
+                          reply_markup=kb.custom_button("В меню", "menu"))
+        await state.clear()
+    except ValueError:
+        msg = await mess.answer("Введенные данные не являются числом. Попробуйте ещё раз!",
+                                reply_markup=kb.custom_button("Отмена", "cancel_a"))
+        await state.update_data({"del": msg.message_id})

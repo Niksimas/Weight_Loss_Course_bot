@@ -1,14 +1,15 @@
 import json
+import datetime as dt
 from decouple import config
 
 from aiogram import Router, F, Bot
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, LabeledPrice, PreCheckoutQuery, CallbackQuery
 
+import Bot.function as fun
 import Bot.keyboard.general as kb
 from Bot.handlers.registration import Registration
 from Bot.BD.work_db import save_new_user, update_activity_user
-import Bot.function as fun
 
 router = Router()
 pay_token = config("pay_token")
@@ -66,4 +67,7 @@ async def process_successful_payment(mess: Message, state: FSMContext, bot: Bot)
     update_activity_user(mess.from_user.id, 1)
     await state.set_state(Registration.DataStart)
     await state.update_data({"group_individual": "individual"})
-    await mess.answer("Пожалуйста, выберите дату старта курса", reply_markup=kb.kalendar())
+    await mess.answer("Пожалуйста, выберите дату старта курса",
+                      reply_markup=kb.kalendar(
+                          (dt.datetime.now(fun.tz[f'tz{data["timezone"]}']) + dt.timedelta(days=1)).date())
+                      )

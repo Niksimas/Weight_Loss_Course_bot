@@ -83,7 +83,7 @@ async def process_night(timezone: int):
             deleted_record_user(user_id)
         elif user_data["course_day"] == 0:
             date = dt.datetime.strptime(user_data["data_start"], '%d.%m.%Y').date()
-            if ((dt.date.today() == date)and(user_data['group_individual']=="individual") ):
+            if ((dt.datetime.now(fun.tz[f"tz{timezone}"]).date() == date)and(user_data['group_individual']=="individual") ):
                 update_course_day(user_id, 1)
         elif user_data["course_day"] == 30:
             fsm_storage_key = StorageKey(bot_id=bot.id, user_id=user_id, chat_id=user_id)
@@ -192,7 +192,7 @@ async def process_evening(timezone: int):
     list_user = get_timezone_user(timezone)
     activity_user = get_activity_user()
     for i in list_user:
-        if not (i in activity_user):
+        if get_course_day_user(i) == 0:
             continue
         try:
             await bot.send_message(

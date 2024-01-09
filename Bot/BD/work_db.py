@@ -2,9 +2,6 @@ import sqlite3
 import datetime as dt
 import Bot.function as fun
 from Bot.google_doc.googleSheets import save_data_user_sheet
-today = dt.date.today()
-'%Y-%m-%d %H:%M:%S.%f'
-tomorrow = dt.datetime.strftime(dt.datetime.now() + dt.timedelta(days=1), '%d.%m.%Y')
 
 
 def check_activity_user(user_id: str) -> bool:
@@ -17,7 +14,6 @@ def check_activity_user(user_id: str) -> bool:
             dict_id[f'{i[0]}'] = i[2]
     try:
         return bool(dict_id[user_id])
-
     except KeyError:
         return False
 
@@ -107,7 +103,7 @@ def get_data_user(user_id: int) -> dict:
         return data_dict
 
 
-def get_actual_mess(num_day: int):
+def get_actual_mess(num_day: int, time_zone: int):
     with sqlite3.connect(f"{fun.home}/BD/main_data.db") as connect:
         cursor = connect.cursor()
         cursor.execute(f'select * from main.notif_mess where num_day=$1',
@@ -118,16 +114,17 @@ def get_actual_mess(num_day: int):
             "day": data_list[2], "type_file_morning": data_list[3],
             "type_file_day": data_list[4]
         }
-        now_time = dt.datetime.today().time()
+        now_time = (dt.datetime.now(fun.tz[f'tz{time_zone}'])).time()
         if dt.time(13, 0, 0) > now_time:
-            result = {"num_day": data_dict["num_day"], "text": data_dict["morning"], "type": data_dict["type_file_morning"]}
+            result = {"num_day": data_dict["num_day"], "text": data_dict["morning"],
+                      "type": data_dict["type_file_morning"]}
         elif dt.time(21, 00, 00) > now_time:
             result = {"num_day": data_dict["num_day"], "text": data_dict["day"], "type": data_dict["type_file_day"]}
         else:
             result = {"num_day": data_dict["num_day"],
                       "text": "Мы желаем Вам доброй ночи. Для лучшего прохождения курса рекомендуем Вам"
-                "<a href='https://apps.apple.com/ru/app/%D0%BC%D0%BE-%D0%BC%D0%B5%D0%B4%D0%B8%D1%82%D0%B0%D1%86%D0%B8%D1%8F-%D0%B8-%D1%81%D0%BE%D0%BD/id1460803131'>"
-                " скачать приложение </a>", "type": "text"}
+                              "<a href='https://apps.apple.com/ru/app/%D0%BC%D0%BE-%D0%BC%D0%B5%D0%B4%D0%B8%D1%82%D0%B0%D1%86%D0%B8%D1%8F-%D0%B8-%D1%81%D0%BE%D0%BD/id1460803131'>"
+                              " скачать приложение </a>", "type": "text"}
         return result
 
 

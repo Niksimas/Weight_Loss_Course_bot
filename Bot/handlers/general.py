@@ -62,7 +62,7 @@ async def start_is_active(call: CallbackQuery, bot: Bot):
                                   f"Дата старта: {data_user['data_start']}\n",
                                   reply_markup=kb.main_menu(edit_date))
     else:
-        data_mess = get_actual_mess(data_user["course_day"])
+        data_mess = get_actual_mess(data_user["course_day"], data_user["timezone"])
         if data_mess['type'] == "text":
             msg = await call.message.answer(
                 f"Идет {data_mess['num_day']} день курса\n\n" +
@@ -105,7 +105,9 @@ async def edit_data_start(call: CallbackQuery, state: FSMContext):
     if data["course_day"] == 0:
         await state.set_state(Registration.DataStartR)
         await call.message.answer("Пожалуйста, выберите дату старта курса",
-                                  reply_markup=kb.kalendar(dt.date.today()+dt.timedelta(days=1)))
+                                  reply_markup=kb.kalendar(
+                                      (dt.datetime.now(fun.tz[f'tz{data["timezone"]}'])+dt.timedelta(days=1)).date())
+                                  )
     else:
         await call.message.answer("Курс начнется меньше, чем через 5 часов. Дату старта нельзя изменить!")
 

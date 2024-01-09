@@ -287,9 +287,10 @@ async def view_next_month(mess: Message, state: FSMContext, bot: Bot):
 
 @router_reg.callback_query(Registration.DataStartR, F.data.split("-")[0] == "next")
 @router_reg.callback_query(Registration.DataStart, F.data.split("-")[0] == "next")
-async def view_next_month(call: CallbackQuery):
+async def view_next_month(call: CallbackQuery, state: FSMContext):
+    data = await state.get_data()
     in_data = dt.date(int(call.data.split("-")[1]), int(call.data.split("-")[2]), int(call.data.split("-")[3]))
-    stop_day = dt.date.today() + dt.timedelta(days=30)
+    stop_day = dt.datetime.now(fun.tz[f"tz{data['timezone']}"]).date() + dt.timedelta(days=30)
     if dt.date(stop_day.year, stop_day.month, 1) > in_data:
         await call.message.edit_reply_markup(
             reply_markup=kb.kalendar(fun.adding_month(in_data)))
@@ -299,9 +300,10 @@ async def view_next_month(call: CallbackQuery):
 
 @router_reg.callback_query(Registration.DataStartR, F.data.split("-")[0] == "back")
 @router_reg.callback_query(Registration.DataStart, F.data.split("-")[0] == "back")
-async def view_back_month(call: CallbackQuery):
+async def view_back_month(call: CallbackQuery, state: FSMContext):
+    data = await state.get_data()
     in_data = dt.date(int(call.data.split("-")[1]), int(call.data.split("-")[2]), int(call.data.split("-")[3]))
-    stop_day = dt.date.today() + dt.timedelta(days=1)
+    stop_day = dt.datetime.now(fun.tz[f"tz{data['timezone']}"]).date() + dt.timedelta(days=1)
     if dt.date(stop_day.year, stop_day.month, 1) < in_data:
         await call.message.edit_reply_markup(
             reply_markup=kb.kalendar(fun.subtracting_month(in_data)))
