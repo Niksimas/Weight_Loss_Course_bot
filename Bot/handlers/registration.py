@@ -109,8 +109,8 @@ async def save_weight(mess: Message, state: FSMContext):
     try:
         weight = int(mess.text)
         await state.update_data({"weight": str(weight)})
-        await mess.answer("Пожалуйста, напишите Ваш адрес, чтобы мы могли отправить продукцию к курсу. "
-                          "\nЖелательный формат: Область, Город, Улица, Дом, Квартира")
+        await mess.answer("Пожалуйста укажите адрес пункта выдачи СДЭК, для отправки сбора трав.\n"
+                          "Формат адреса: город (поселок/область), улица, дом, офис.")
         await state.set_state(Registration.Address)
     except ValueError:
         await mess.answer("Введите только число!")
@@ -118,8 +118,8 @@ async def save_weight(mess: Message, state: FSMContext):
 
 @router_reg.callback_query(F.data == "course", Registration.Address)
 async def save_full_name(call: CallbackQuery):
-    await call.message.edit_text("Пожалуйста, напишите Ваш адрес, чтобы мы могли отправить продукцию к курсу. "
-                                 "\nЖелательный формат: Область, Город, Улица, Дом, Квартира",
+    await call.message.edit_text("Пожалуйста укажите адрес пункта выдачи СДЭК, для отправки сбора трав.\n"
+                                 "Формат адреса: город (поселок/область), улица, дом, офис.",
                                  reply_markup=None)
 
 
@@ -145,13 +145,13 @@ async def save_phone(mess: Message, state: FSMContext):
         await state.update_data({"phone": mess.contact.phone_number})
     except AttributeError:
         await state.update_data({"phone": mess.text})
-    await mess.answer("Пожалуйста, напишите email", reply_markup=ReplyKeyboardRemove())
+    await mess.answer("Пожалуйста, напишите email и ник Instagram", reply_markup=ReplyKeyboardRemove())
     await state.set_state(Registration.Email)
 
 
 @router_reg.callback_query(F.data == "course", Registration.Email)
 async def save_full_name(call: CallbackQuery):
-    await call.message.edit_text("Пожалуйста, напишите email", reply_markup=None)
+    await call.message.edit_text("Пожалуйста, напишите email и ник Instagram", reply_markup=None)
 
 
 @router_reg.message(Registration.Email)

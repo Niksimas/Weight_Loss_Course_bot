@@ -29,7 +29,7 @@ async def start_main(mess: Message, state: FSMContext, bot: Bot):
 
 
 @router_general.callback_query(F.data == "menu", StateFilter(None))
-async def main_menu_call(call: CallbackQuery, state: FSMContext, bot: Bot):
+async def main_menu_call(call: CallbackQuery, state: FSMContext):
     await state.clear()
     try:
         await call.message.edit_text("👋 Привет!)\n"
