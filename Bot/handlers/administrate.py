@@ -256,22 +256,46 @@ async def edit_mess_notif(call: CallbackQuery, state: FSMContext):
     if call.data.split("_")[0] == "edit":
         await state.set_data({"num_day": int(call.data.split("_")[-1]), "time": call.data.split("_")[1]})
     await call.message.delete()
-    await call.message.answer("Пожалуйста, отправьте информацию одним сообщением",
+    msg = await call.message.answer("Пожалуйста, отправьте информацию одним сообщением",
                               reply_markup=kb.custom_button("Отмена", "cancel_a"))
+    await state.update_data({"del": msg.message_id})
 
 
 @router_admin.message(F.text, EditMessDay.SetMess)
-async def set_text_notif(mess: Message, state: FSMContext):
+async def set_text_notif(mess: Message, state: FSMContext, bot: Bot):
+    try:
+        data = await state.get_data()
+        await bot.edit_message_reply_markup(mess.from_user.id, data["del"], reply_markup=None)
+    except:
+        pass
     await state.set_state(EditMessDay.Verify)
     await state.update_data({"text": mess.text, "type": "text"})
     await mess.answer("Новое сообщения для рассылки: ")
     await mess.answer(f"{mess.text}", reply_markup=kb.menu_notif("text"))
 
 
+@router_admin.message(F.media_group_id, EditMessDay.SetMess)
+async def save_photo_front(mess: Message, state: FSMContext, bot: Bot):
+    data = await state.get_data()
+    try:
+        if data["group_id"] == mess.media_group_id:
+            return
+        else:
+            await state.update_data({"group_id": mess.media_group_id})
+            await mess.answer("Можно добавить только один файл!")
+    except KeyError:
+        await state.update_data({"group_id": mess.media_group_id})
+        await mess.answer("Можно добавить только один файл!")
+
+
 @router_admin.message(F.photo, EditMessDay.SetMess)
 async def set_photo_notif(mess: Message, state: FSMContext, bot: Bot):
     await state.set_state(EditMessDay.Verify)
     data = await state.get_data()
+    try:
+        await bot.edit_message_reply_markup(mess.from_user.id, data["del"], reply_markup=None)
+    except:
+        pass
     await bot.download(mess.photo[-1].file_id,
                        destination=f"{fun.home}/file_mess_notif/{data['num_day']}/photo.jpg")
     await state.update_data({"text": mess.caption, "type": "photo"})
@@ -283,6 +307,11 @@ async def set_photo_notif(mess: Message, state: FSMContext, bot: Bot):
 async def set_doc_notif(mess: Message, state: FSMContext, bot: Bot):
     await state.set_state(EditMessDay.Verify)
     data = await state.get_data()
+    try:
+        data = await state.get_data()
+        await bot.edit_message_reply_markup(mess.from_user.id, data["del"], reply_markup=None)
+    except:
+        pass
     await bot.download(mess.document.file_id,
                        destination=f"{fun.home}/file_mess_notif/{data['num_day']}/"
                                    f"file.{mess.document.file_name.split('.')[-1]}")
@@ -295,6 +324,11 @@ async def set_doc_notif(mess: Message, state: FSMContext, bot: Bot):
 async def set_video_notif(mess: Message, state: FSMContext, bot: Bot):
     await state.set_state(EditMessDay.Verify)
     data = await state.get_data()
+    try:
+        data = await state.get_data()
+        await bot.edit_message_reply_markup(mess.from_user.id, data["del"], reply_markup=None)
+    except:
+        pass
     await bot.download(mess.video.file_id,
                        destination=f"{fun.home}/file_mess_notif/{data['num_day']}/video.mp4")
     await state.update_data({"text": mess.caption, "type": "video"})
@@ -365,7 +399,7 @@ async def send_mess(mess: Message, bot: Bot, state: FSMContext):
     await state.clear()
 
 
-# ################################ Просмотр фотографий пользователя ##################################### #
+# ################################ Изменение ссылки для группового обучения ##################################### #
 class EditGroupInfo(StatesGroup):
     Choice = State()
     Link = State()
