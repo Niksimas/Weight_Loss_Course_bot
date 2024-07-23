@@ -171,3 +171,15 @@ def group_individual() -> InlineKeyboardMarkup:
     ]
     keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)
     return keyboard
+
+
+def policy_confirmation() -> InlineKeyboardMarkup:
+    buttons = [
+        [InlineKeyboardButton(text='📄 Пользовательское соглашение', url="https://telegra.ph/Ofer-12-12")],
+        [
+            InlineKeyboardButton(text="Я согласен", callback_data="yes"),
+            InlineKeyboardButton(text="Я не согласен", callback_data="menu")
+        ]
+    ]
+    keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)
+    return keyboard

@@ -28,7 +28,7 @@ async def start_main(mess: Message, state: FSMContext, bot: Bot):
             pass
 
 
-@router_general.callback_query(F.data == "menu", StateFilter(None))
+@router_general.callback_query(F.data == "menu")
 async def main_menu_call(call: CallbackQuery, state: FSMContext):
     await state.clear()
     try:

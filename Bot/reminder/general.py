@@ -34,7 +34,7 @@ async def main_process(time: str, timezone: int):
             try:
                 day = get_course_day_user(i)
                 mess_id = get_data_user(i)["mess_id"]
-            except KeyError:
+            except (KeyError, IndexError):
                 continue
             mess_data = get_notif_mess(time, day)
             if mess_data[1] == "text":
@@ -79,7 +79,10 @@ async def process_night(timezone: int):
             await bot.send_message(user_id, "Подписка закончилась!")
             update_course_day(user_id, 0)
             update_activity_user(user_id, 0)
-            shutil.rmtree(f"{fun.home}/user_photo/{user_id}")
+            try:
+                shutil.rmtree(f"{fun.home}/user_photo/{user_id}")
+            except FileNotFoundError:
+                pass
             deleted_record_user(user_id)
         elif user_data["course_day"] == 0:
             date = dt.datetime.strptime(user_data["data_start"], '%d.%m.%Y').date()

@@ -270,7 +270,7 @@ async def set_text_notif(mess: Message, state: FSMContext, bot: Bot):
         pass
     await state.set_state(EditMessDay.Verify)
     await state.update_data({"text": mess.text, "type": "text"})
-    await mess.answer("Новое сообщения для рассылки: ")
+    await mess.answer("Новое сообщения для отправки по расписанию: ")
     await mess.answer(f"{mess.text}", reply_markup=kb.menu_notif("text"))
 
 
@@ -316,7 +316,7 @@ async def set_doc_notif(mess: Message, state: FSMContext, bot: Bot):
                        destination=f"{fun.home}/file_mess_notif/{data['num_day']}/"
                                    f"file.{mess.document.file_name.split('.')[-1]}")
     await state.update_data({"text": mess.caption, "type": "doc"})
-    await mess.answer("Новое сообщения для рассылки: ")
+    await mess.answer("Новое сообщения для отправки по расписанию: ")
     await mess.answer_document(mess.document.file_id, caption=mess.caption, reply_markup=kb.menu_notif("doc"))
 
 
@@ -332,7 +332,7 @@ async def set_video_notif(mess: Message, state: FSMContext, bot: Bot):
     await bot.download(mess.video.file_id,
                        destination=f"{fun.home}/file_mess_notif/{data['num_day']}/video.mp4")
     await state.update_data({"text": mess.caption, "type": "video"})
-    await mess.answer("Новое сообщения для рассылки: ")
+    await mess.answer("Новое сообщения для отправки по расписанию: ")
     await mess.answer_video(mess.video.file_id, caption=mess.caption, reply_markup=kb.menu_notif("video"))
 
 

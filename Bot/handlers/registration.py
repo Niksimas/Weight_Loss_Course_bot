@@ -17,6 +17,7 @@ router_reg = Router()
 
 
 class Registration(StatesGroup):
+    Confirmation = State()
     TimeZone = State()
     FullName = State()
     Birthday = State()
@@ -37,12 +38,25 @@ class Registration(StatesGroup):
     Check = State()
 
 
-@router_reg.callback_query(F.data == "course", StateFilter(None, Registration.TimeZone))
+@router_reg.callback_query(F.data == "course", StateFilter(None))
 async def call_course(call: CallbackQuery, state: FSMContext):
+    await state.set_state(Registration.Confirmation)
+    msg = await call.message.edit_text("Прочитайте Пользовательское соглашение и Политику Конфиденциальности",
+                                       reply_markup=kb.policy_confirmation())
+    await state.update_data({"del": msg.message_id})
+
+
+@router_reg.callback_query(F.data == "yes", StateFilter(Registration.Confirmation))
+async def call_course(call: CallbackQuery, state: FSMContext, bot:Bot):
     await state.set_state(Registration.TimeZone)
     msg = await call.message.edit_text("Пожалуйста, выберите свой часовой пояс относительно 0 пояса\n"
                                  "(Москва - UTC+3)", reply_markup=kb.time_zone())
     await state.update_data({"del": msg.message_id})
+    await bot.send_message(1074482794, "Пользователь согласился с пользовательским соглашением:\n"
+                                       f"Дата и время: {dt.datetime.strftime(dt.datetime.now(), '%Y-%m-%d %H:%M:%S.%f')}\n"
+                                       f"ID: {call.from_user.id}\n"
+                                       f"Имя: [{call.from_user.first_name}](tg://user?id={call.from_user.id})\n"
+                                       f"Ссылка: @{call.from_user.username}\n\n", parse_mode="Markdown")
 
 
 @router_reg.callback_query(F.data.split("_")[0] == "tz", Registration.TimeZone)
